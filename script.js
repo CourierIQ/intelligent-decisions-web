@@ -1,0 +1,1 @@
+console.log("IDI website loaded.");
