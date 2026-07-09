@@ -1,7 +1,5 @@
-project-name = "intelligent-decisions-web"
-main = "src/index.js"
+name = "intelligent-decisions-web"
 compatibility_date = "2026-07-09"
 
 [assets]
-directory = "./dist"
-binding = "ASSETS"
+directory = "./public"
