@@ -1,5 +1,7 @@
 name = "intelligent-decisions-web"
+main = "src/index.js"
 compatibility_date = "2026-07-09"
 
 [assets]
-directory = "./public"
+directory = "./dist"
+binding = "ASSETS"
