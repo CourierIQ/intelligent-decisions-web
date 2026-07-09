@@ -1,4 +1,4 @@
-name = "intelligent-decisions-web"
+project-name = "intelligent-decisions-web"
 main = "src/index.js"
 compatibility_date = "2026-07-09"
 
