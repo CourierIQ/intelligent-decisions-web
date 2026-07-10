@@ -557,6 +557,10 @@ footer {
    keep the existing desktop composition and move only the phone preview down
    so its top aligns with the product subtitle. */
 @media (min-width: 1051px) {
+  .products {
+    margin-top: 94px;
+  }
+
   .courieriq-preview {
     align-self: stretch;
     justify-content: flex-start;
@@ -690,7 +694,7 @@ footer {
 
   .courieriq-preview {
     height: auto;
-    margin-top: 0;
+    margin-top: 10px;
     padding-top: 0;
   }
 
