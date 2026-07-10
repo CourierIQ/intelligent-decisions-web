@@ -1,160 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Intelligent Decisions Interactive</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <meta
+    name="description"
+    content="Intelligent Decisions Interactive builds software that transforms complex information into clear, actionable decisions."
+  />
+
+  <title>Intelligent Decisions Interactive</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
-    <header class="site-header">
-        <a href="#" class="logo">IDI</a>
+  <header class="site-header">
+    <a href="#home" class="logo" aria-label="IDI Home">
+      IDI
+    </a>
 
-        <nav>
-            <a href="#products">Products</a>
-            <a href="#mission">Mission</a>
-            <a href="#contact">Contact</a>
-        </nav>
+    <nav aria-label="Main navigation">
+      <a href="#products">Products</a>
+      <a href="#mission">Mission</a>
+      <a href="#contact">Contact</a>
+    </nav>
 
-        <a href="#courieriq" class="nav-cta">Private Beta</a>
-    </header>
+    <a href="#courieriq" class="nav-cta">
+      Private Beta
+    </a>
+  </header>
 
-    <main>
-        <section class="hero">
-            <div class="hero-content">
-                <p class="eyebrow">Intelligent Decisions Interactive</p>
+  <main>
+    <section id="home" class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">
+          Intelligent Decisions Interactive
+        </p>
 
-                <h1 class="idi-logo">
-                    <span>IDI</span>
-                </h1>
+        <h1 class="idi-logo" aria-label="IDI">
+          <span>IDI</span>
+        </h1>
 
-                <h2 class="sheen">Clarity over Complexity.</h2>
+        <h2>Clarity over Complexity.</h2>
 
-                <p class="tagline">
-                    Software that helps people make better decisions.
-                </p>
+        <p class="tagline">
+          Software that helps people make better decisions.
+        </p>
 
-                <p class="description">
-                    We build intelligent software that transforms complex information into
-                    clear, actionable decisions through thoughtful design, automation, and
-                    uncompromising user experience.
-                </p>
+        <p class="description">
+          We build intelligent software that transforms complex information
+          into clear, actionable decisions through thoughtful design,
+          automation, and uncompromising user experience.
+        </p>
 
-                <div class="actions">
-                    <a href="#courieriq" class="btn primary">Explore CourierIQ</a>
-                    <a href="#mission" class="btn secondary">Our Mission</a>
-                </div>
-            </div>
+        <div class="actions">
+          <a href="#courieriq" class="btn primary">
+            Explore CourierIQ
+          </a>
 
-            <div class="hero-card">
-                <span>IDI Standard</span>
-                <strong>Every feature must create clarity.</strong>
-                <p>If it adds complexity without improving the decision, it does not belong.</p>
-            </div>
-        </section>
+          <a href="#mission" class="btn secondary">
+            Our Mission
+          </a>
+        </div>
+      </div>
+    </section>
 
-        <section id="mission" class="mission">
-            <p class="eyebrow">Our Mission</p>
-            <h2>Technology should reduce complexity, not create it.</h2>
+    <section id="mission" class="mission">
+      <div class="section-inner">
+        <p class="eyebrow">Our Mission</p>
+
+        <h2>
+          Technology should reduce complexity, not create it.
+        </h2>
+
+        <p class="mission-copy">
+          Intelligent Decisions Interactive builds products that help users act
+          with confidence by making the next decision clearer, faster, and
+          easier.
+        </p>
+      </div>
+    </section>
+
+    <section id="courieriq" class="products">
+      <div class="product-copy">
+        <p class="eyebrow">Flagship Product</p>
+
+        <h2>CourierIQ</h2>
+
+        <p class="product-lead">
+          Decision intelligence built for delivery drivers.
+        </p>
+
+        <p class="description">
+          CourierIQ evaluates delivery offers, tracks active trips, and turns
+          earnings data into clear, actionable information—so drivers can make
+          better decisions without slowing down.
+        </p>
+
+        <div class="feature-list">
+          <article class="feature-card">
+            <strong>Offer Analysis</strong>
+
+            <span>
+              Evaluate pay, mileage, time, and overall offer quality.
+            </span>
+          </article>
+
+          <article class="feature-card">
+            <strong>Trip Tracking</strong>
+
+            <span>
+              Track active deliveries through a streamlined workflow.
+            </span>
+          </article>
+
+          <article class="feature-card">
+            <strong>Performance Insight</strong>
+
+            <span>
+              Understand hourly earnings, mileage efficiency, and trends.
+            </span>
+          </article>
+
+          <article class="feature-card">
+            <strong>Clear Recommendations</strong>
+
+            <span>
+              See an immediate IQ score and an actionable result.
+            </span>
+          </article>
+        </div>
+
+        <a
+          href="mailto:bhall@intelligentdecisions.io?subject=CourierIQ Private Beta"
+          class="btn primary"
+        >
+          Request Beta Access
+        </a>
+      </div>
+
+      <div class="courieriq-preview">
+        <div class="phone-frame">
+          <div class="phone-speaker" aria-hidden="true"></div>
+
+          <img
+            src="images/courieriq-scan-offer.webp"
+            alt="CourierIQ offer analysis showing an IQ score of 92"
+          />
+        </div>
+
+        <p class="preview-caption">
+          Clear offer analysis in seconds.
+        </p>
+      </div>
+    </section>
+
+    <section id="products" class="ecosystem">
+      <div class="section-inner">
+        <p class="eyebrow">Products</p>
+
+        <h2>
+          One company. Multiple intelligent solutions.
+        </h2>
+
+        <div class="ecosystem-grid">
+          <article class="ecosystem-card featured">
+            <p class="product-status">Private Beta</p>
+
+            <h3>CourierIQ</h3>
+
             <p>
-                Intelligent Decisions Interactive builds products that help users act with
-                confidence by making the next decision clearer, faster, and easier.
+              Decision intelligence for gig delivery drivers.
             </p>
-        </section>
+          </article>
 
-        <section id="products" class="products">
-            <p class="eyebrow">Products</p>
-            <h2>One company. Multiple intelligent solutions.</h2>
+          <article class="ecosystem-card">
+            <p class="product-status">Coming Soon</p>
 
-            <section id="products" class="products">
-                <div class="product-copy">
-                    <p class="eyebrow">Flagship Product</p>
+            <h3>DecisionIQ</h3>
 
-                    <h2>CourierIQ</h2>
+            <p>
+              Tools designed to turn complex choices into clear paths forward.
+            </p>
+          </article>
 
-                    <p class="product-lead">
-                        Decision intelligence built for delivery drivers.
-                    </p>
+          <article class="ecosystem-card">
+            <p class="product-status">Future Product</p>
 
-                    <p class="description">
-                        CourierIQ evaluates delivery offers, tracks active trips, and turns
-                        earnings data into clear, actionable information—so drivers can make
-                        better decisions without slowing down.
-                    </p>
+            <h3>RetailIQ</h3>
 
-                    <div class="feature-list">
-                        <div>
-                            <strong>Offer Analysis</strong>
-                            <span>Evaluate pay, mileage, time, and overall offer quality.</span>
-                        </div>
+            <p>
+              Operational intelligence for retail workflows, teams, and
+              decision support.
+            </p>
+          </article>
 
-                        <div>
-                            <strong>Trip Tracking</strong>
-                            <span>Track active deliveries through a streamlined workflow.</span>
-                        </div>
+          <article class="ecosystem-card">
+            <p class="product-status">Future Product</p>
 
-                        <div>
-                            <strong>Performance Insight</strong>
-                            <span>Understand hourly earnings, mileage efficiency, and trends.</span>
-                        </div>
+            <h3>FleetIQ</h3>
 
-                        <div>
-                            <strong>Clear Recommendations</strong>
-                            <span>See an immediate IQ score and an actionable result.</span>
-                        </div>
-                    </div>
+            <p>
+              Decision support and performance insight for fleet operations.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
 
-                    <a href="mailto:bhall@intelligentdecisions.io?subject=CourierIQ Private Beta" class="btn primary">
-                        Request Beta Access
-                    </a>
-                </div>
+    <section id="contact" class="contact">
+      <div class="section-inner">
+        <p class="eyebrow">Contact</p>
 
-                <div class="courieriq-preview">
-                    <div class="phone-frame">
-                        <div class="phone-speaker"></div>
+        <h2>Build with clarity.</h2>
 
-                        <img src="images/courieriq-scan-offer.webp"
-                            alt="CourierIQ offer analysis showing an IQ score of 92" />
-                    </div>
+        <p class="contact-copy">
+          Questions about CourierIQ, private beta access, or Intelligent
+          Decisions Interactive?
+        </p>
 
-                    <p class="preview-caption">
-                        Clear offer analysis in seconds.
-                    </p>
-                </div>
-            </section>
+        <a
+          href="mailto:bhall@intelligentdecisions.io"
+          class="btn primary"
+        >
+          Contact IDI
+        </a>
+      </div>
+    </section>
+  </main>
 
-            <article class="product-card">
-                <span>Coming Soon</span>
-                <h3>DecisionIQ</h3>
-                <p>Decision-making tools designed to turn complex choices into clear paths forward.</p>
-            </article>
+  <footer>
+    <div class="footer-inner">
+      <p>
+        © 2026 Intelligent Decisions Interactive.
+      </p>
 
-            <article class="product-card">
-                <span>Future Product</span>
-                <h3>RetailIQ</h3>
-                <p>Operational intelligence for retail workflows, teams, and decision support.</p>
-            </article>
-            </div>
-        </section>
+      <p>
+        IDI — Clarity over Complexity.
+      </p>
+    </div>
+  </footer>
 
-        <section id="contact" class="contact">
-            <p class="eyebrow">Contact</p>
-            <h2>Build with clarity.</h2>
-            <a href="mailto:bhall@intelligentdecisions.io" class="btn primary">Contact IDI</a>
-        </section>
-    </main>
-
-    <footer>
-        <p>© 2026 Intelligent Decisions Interactive. Clarity over Complexity.</p>
-    </footer>
-
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>
