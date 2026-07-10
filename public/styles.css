@@ -386,7 +386,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  margin-top: 34px;
+  margin-top: 118px;
 }
 
 .phone-frame {
@@ -554,14 +554,13 @@ footer {
 
 
 /* Desktop CourierIQ preview alignment:
-   preserve the existing desktop layout and move only the phone preview down
-   so the top of the frame aligns with the product subtitle. */
+   keep the existing desktop composition and move only the phone preview down
+   so its top aligns with the product subtitle. */
 @media (min-width: 1051px) {
   .courieriq-preview {
-    align-self: start;
+    align-self: stretch;
     justify-content: flex-start;
-    margin-top: 118px;
-    padding-top: 0;
+    padding-top: 108px;
   }
 }
 
