@@ -308,19 +308,36 @@ h2 {
   display: grid;
   width: min(calc(100% - (var(--page-padding) * 2)), var(--page-width));
   grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
-  align-items: center;
-  gap: clamp(56px, 7vw, 100px);
+  grid-template-areas:
+    "heading preview"
+    "copy preview";
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(56px, 7vw, 100px);
+  row-gap: 18px;
+  align-items: start;
   margin: 0 auto;
-  padding: 110px 0;
+  padding: 72px 0 96px;
+  scroll-margin-top: 82px;
+}
+
+.product-heading {
+  grid-area: heading;
+  min-width: 0;
+}
+
+.product-heading .eyebrow {
+  margin-bottom: 12px;
+}
+
+.product-heading h2 {
+  margin-bottom: 0;
+  color: var(--white);
 }
 
 .product-copy {
+  grid-area: copy;
   min-width: 0;
   max-width: 680px;
-}
-
-.product-copy h2 {
-  color: var(--white);
 }
 
 .product-lead {
@@ -364,16 +381,22 @@ h2 {
 }
 
 .courieriq-preview {
+  grid-area: preview;
   display: flex;
   min-width: 0;
+  height: 100%;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .phone-frame {
   position: relative;
-  width: min(100%, 440px);
+  width: auto;
+  max-width: 100%;
+  height: calc(100% - 40px);
+  min-height: 620px;
+  aspect-ratio: 709 / 1536;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 48px;
@@ -401,7 +424,9 @@ h2 {
 
 .phone-frame img {
   width: 100%;
+  height: 100%;
   border-radius: 38px;
+  object-fit: cover;
 }
 
 .phone-speaker {
@@ -538,7 +563,11 @@ footer {
 @media (max-width: 1050px) {
   .products {
     grid-template-columns: minmax(0, 1fr) minmax(330px, 410px);
-    gap: 48px;
+    column-gap: 48px;
+  }
+
+  .phone-frame {
+    min-height: 580px;
   }
 
   .feature-list {
@@ -620,26 +649,49 @@ footer {
   }
 
   .products {
-    display: flex;
+    display: grid;
     width: auto;
-    flex-direction: column;
-    gap: 56px;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "heading"
+      "preview"
+      "copy";
+    grid-template-rows: auto;
+    gap: 34px;
     margin: 0;
-    padding: 86px 24px;
+    padding: 46px 24px 86px;
+    scroll-margin-top: 78px;
   }
 
-  .product-copy {
+  .product-heading,
+  .product-copy,
+  .courieriq-preview {
     width: 100%;
     max-width: none;
   }
 
+  .product-heading .eyebrow {
+    margin-bottom: 10px;
+  }
+
+  .product-heading h2 {
+    font-size: clamp(2.5rem, 11vw, 3.4rem);
+  }
+
   .courieriq-preview {
-    order: -1;
-    width: 100%;
+    height: auto;
   }
 
   .phone-frame {
     width: min(100%, 380px);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  .phone-frame img {
+    height: auto;
+    object-fit: contain;
   }
 
   .feature-list {
