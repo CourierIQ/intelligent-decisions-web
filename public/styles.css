@@ -590,7 +590,7 @@ footer {
 
 @media (max-width: 820px) {
   #courieriq {
-    scroll-margin-top: 49px;
+    scroll-margin-top: 78px;
   }
 
   :root {
@@ -667,9 +667,9 @@ footer {
       "preview"
       "copy";
     grid-template-rows: auto;
-    gap: 34px;
+    gap: 16px;
     margin: 0;
-    padding: 46px 24px 86px;
+    padding: 16px 24px 86px;
     scroll-margin-top: 78px;
   }
 
@@ -690,6 +690,7 @@ footer {
 
   .courieriq-preview {
     height: auto;
+    margin-top: 0;
   }
 
   .phone-frame {
@@ -788,7 +789,7 @@ footer {
   }
 
   .products {
-    padding: 76px 20px;
+    padding: 16px 20px 76px;
   }
 
   .ecosystem {
