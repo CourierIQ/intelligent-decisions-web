@@ -3,21 +3,15 @@
   --navy-deep: #03090f;
   --navy-soft: #0b1826;
   --navy-card: #101d2b;
-
   --gold: #d4af37;
   --gold-light: #dfbd4c;
-
   --white: #f7f8fa;
   --muted: #aeb8c4;
-
   --border: rgba(255, 255, 255, 0.08);
   --gold-border: rgba(212, 175, 55, 0.22);
-
   --page-width: 1280px;
   --page-padding: clamp(24px, 6vw, 88px);
 }
-
-/* Base */
 
 * {
   box-sizing: border-box;
@@ -51,10 +45,7 @@ section {
 }
 
 .section-inner {
-  width: min(
-    calc(100% - (var(--page-padding) * 2)),
-    var(--page-width)
-  );
+  width: min(calc(100% - (var(--page-padding) * 2)), var(--page-width));
   margin: 0 auto;
 }
 
@@ -65,18 +56,14 @@ section {
   top: 0;
   left: 0;
   z-index: 100;
-
   display: flex;
   width: 100%;
   height: 82px;
   align-items: center;
   justify-content: space-between;
-
   padding: 0 var(--page-padding);
-
   border-bottom: 1px solid var(--border);
   background: rgba(7, 18, 29, 0.93);
-
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -109,17 +96,12 @@ section {
 
 .nav-cta {
   padding: 11px 20px;
-
   border: 1px solid var(--gold);
   border-radius: 999px;
-
   color: var(--white);
   font-size: 0.9rem;
   text-decoration: none;
-
-  transition:
-    color 160ms ease,
-    background 160ms ease;
+  transition: color 160ms ease, background 160ms ease;
 }
 
 .nav-cta:hover {
@@ -131,7 +113,6 @@ section {
 
 .eyebrow {
   margin-bottom: 18px;
-
   color: var(--gold);
   font-size: 0.76rem;
   font-weight: 700;
@@ -143,7 +124,6 @@ section {
 h2 {
   max-width: 820px;
   margin: 0 0 22px;
-
   color: var(--white);
   font-size: clamp(2.45rem, 4vw, 4.2rem);
   font-weight: 600;
@@ -153,7 +133,6 @@ h2 {
 
 .description {
   max-width: 680px;
-
   color: var(--muted);
   font-size: clamp(1rem, 1.2vw, 1.12rem);
   line-height: 1.78;
@@ -173,13 +152,10 @@ h2 {
   min-height: 52px;
   align-items: center;
   justify-content: center;
-
   padding: 14px 26px;
   border-radius: 12px;
-
   font-weight: 750;
   text-decoration: none;
-
   transition:
     transform 160ms ease,
     background 160ms ease,
@@ -223,12 +199,10 @@ h2 {
   display: flex;
   min-height: 100vh;
   align-items: center;
-
   padding:
     145px
     max(var(--page-padding), calc((100vw - var(--page-width)) / 2))
     100px;
-
   background:
     radial-gradient(
       circle at 84% 18%,
@@ -245,9 +219,7 @@ h2 {
 .idi-logo {
   position: relative;
   display: inline-block;
-
   margin: 0;
-
   font-size: clamp(5.5rem, 12vw, 10rem);
   font-weight: 800;
   letter-spacing: -0.07em;
@@ -257,7 +229,6 @@ h2 {
 .idi-logo span {
   position: relative;
   display: inline-block;
-
   background: linear-gradient(
     135deg,
     #898d91 0%,
@@ -270,14 +241,11 @@ h2 {
     #bcc1c4 85%,
     #85898d 100%
   );
-
   background-clip: text;
   color: #adb1b5;
-
   text-shadow:
     0 -1px 0 rgba(255, 255, 255, 0.04),
     0 1px 1px rgba(0, 0, 0, 0.2);
-
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -285,9 +253,7 @@ h2 {
 .idi-logo span::before {
   position: absolute;
   inset: 0;
-
   content: "IDI";
-
   background: repeating-linear-gradient(
     -12deg,
     rgba(255, 255, 255, 0.034) 0,
@@ -295,12 +261,10 @@ h2 {
     rgba(0, 0, 0, 0.012) 3px,
     rgba(0, 0, 0, 0.012) 5px
   );
-
   background-clip: text;
   color: transparent;
   opacity: 0.38;
   pointer-events: none;
-
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -314,7 +278,6 @@ h2 {
 .tagline {
   max-width: 700px;
   margin-bottom: 20px;
-
   color: var(--white);
   font-size: clamp(1.3rem, 2vw, 1.85rem);
   font-weight: 650;
@@ -334,7 +297,6 @@ h2 {
 
 .mission-copy {
   max-width: 760px;
-
   color: var(--white);
   font-size: clamp(1.05rem, 1.4vw, 1.2rem);
   line-height: 1.8;
@@ -344,15 +306,10 @@ h2 {
 
 .products {
   display: grid;
-  width: min(
-    calc(100% - (var(--page-padding) * 2)),
-    var(--page-width)
-  );
-
+  width: min(calc(100% - (var(--page-padding) * 2)), var(--page-width));
   grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
   align-items: center;
   gap: clamp(56px, 7vw, 100px);
-
   margin: 0 auto;
   padding: 110px 0;
 }
@@ -369,7 +326,6 @@ h2 {
 .product-lead {
   max-width: 620px;
   margin-bottom: 18px;
-
   color: var(--white);
   font-size: clamp(1.3rem, 2vw, 1.8rem);
   font-weight: 700;
@@ -387,7 +343,6 @@ h2 {
   min-width: 0;
   min-height: 150px;
   padding: 22px;
-
   border: 1px solid var(--gold-border);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.025);
@@ -396,7 +351,6 @@ h2 {
 .feature-card strong {
   display: block;
   margin-bottom: 10px;
-
   color: var(--white);
   font-size: 1rem;
   line-height: 1.4;
@@ -404,7 +358,6 @@ h2 {
 
 .feature-card span {
   display: block;
-
   color: var(--muted);
   font-size: 0.94rem;
   line-height: 1.65;
@@ -420,13 +373,10 @@ h2 {
 
 .phone-frame {
   position: relative;
-
   width: min(100%, 440px);
   padding: 10px;
-
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 48px;
-
   background: linear-gradient(
     145deg,
     #31373c,
@@ -434,7 +384,6 @@ h2 {
     #070b0e 74%,
     #292f34
   );
-
   box-shadow:
     0 34px 90px rgba(0, 0, 0, 0.48),
     0 0 80px rgba(212, 175, 55, 0.05);
@@ -444,10 +393,8 @@ h2 {
   position: absolute;
   inset: 5px;
   z-index: 1;
-
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 42px;
-
   content: "";
   pointer-events: none;
 }
@@ -462,19 +409,15 @@ h2 {
   top: 20px;
   left: 50%;
   z-index: 2;
-
   width: 64px;
   height: 6px;
-
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.72);
-
   transform: translateX(-50%);
 }
 
 .preview-caption {
   margin-top: 20px;
-
   color: var(--muted);
   font-size: 0.9rem;
   letter-spacing: 0.035em;
@@ -484,99 +427,110 @@ h2 {
 /* Product ecosystem */
 
 .ecosystem {
-  padding: 94px 0;
+  padding: 96px 0 104px;
   background: var(--navy-soft);
 }
 
 .ecosystem h2 {
   max-width: 760px;
-  color: var(--white);
+  margin-bottom: 48px;
+  color: var(--gold);
+  font-size: clamp(2.6rem, 3.8vw, 4rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
 }
 
 .ecosystem-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 42px;
+  gap: 30px;
+  margin-top: 0;
 }
 
 .ecosystem-card {
-  min-height: 190px;
-  padding: 26px;
-
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--navy-card);
-}
-
-.ecosystem-card.featured {
-  border-color: var(--gold-border);
+  min-height: 150px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .product-status {
-  margin-bottom: 14px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
 
+.ecosystem-card.featured .product-status {
   color: var(--gold);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .ecosystem-card h3 {
-  margin-bottom: 10px;
-
+  margin-bottom: 8px;
   color: var(--white);
-  font-size: 1.35rem;
+  font-size: 1.18rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
 }
 
 .ecosystem-card > p:last-child {
+  max-width: 270px;
   color: var(--muted);
-  font-size: 0.94rem;
-  line-height: 1.65;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 /* Contact */
 
 .contact {
-  padding: 96px 0;
-  background: linear-gradient(135deg, var(--navy-soft), var(--navy-deep));
+  padding: 104px 0 122px;
+  background: linear-gradient(135deg, var(--navy-deep), var(--navy-soft));
 }
 
 .contact h2 {
-  margin-bottom: 18px;
+  max-width: 720px;
+  margin-bottom: 20px;
+  color: var(--white);
+  font-size: clamp(2.6rem, 3.8vw, 4rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
 }
 
 .contact-copy {
-  max-width: 620px;
-  margin-bottom: 30px;
-
+  max-width: 650px;
+  margin-bottom: 34px;
   color: var(--muted);
-  font-size: 1.05rem;
+  font-size: 1rem;
+  font-weight: 400;
   line-height: 1.75;
 }
 
 /* Footer */
 
 footer {
-  padding: 28px 0;
+  padding: 30px 0 34px;
   border-top: 1px solid var(--border);
+  background: var(--navy-deep);
 }
 
 .footer-inner {
   display: flex;
-  width: min(
-    calc(100% - (var(--page-padding) * 2)),
-    var(--page-width)
-  );
-
+  width: min(calc(100% - (var(--page-padding) * 2)), var(--page-width));
   align-items: center;
   justify-content: space-between;
-
+  gap: 24px;
   margin: 0 auto;
-
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.84rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 /* Tablet */
@@ -593,6 +547,7 @@ footer {
 
   .ecosystem-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 42px;
   }
 }
 
@@ -626,7 +581,6 @@ footer {
   .hero .eyebrow {
     max-width: 300px;
     margin-bottom: 26px;
-
     font-size: 0.68rem;
     letter-spacing: 0.24em;
     line-height: 1.7;
@@ -634,7 +588,6 @@ footer {
 
   .idi-logo {
     display: block;
-
     font-size: clamp(4.8rem, 25vw, 7.2rem);
     letter-spacing: -0.055em;
   }
@@ -642,34 +595,27 @@ footer {
   .hero h2 {
     max-width: 100%;
     margin-top: 28px;
-
     font-size: clamp(2.25rem, 10vw, 3.4rem);
     line-height: 1.08;
   }
 
   .tagline {
     max-width: 100%;
-
     font-size: 1.35rem;
     line-height: 1.5;
   }
 
   .hero .description {
     max-width: 100%;
-
     font-size: 1rem;
     line-height: 1.75;
   }
 
-  .mission,
-  .ecosystem,
-  .contact {
+  .mission {
     padding: 80px 0;
   }
 
-  .mission h2,
-  .ecosystem h2,
-  .contact h2 {
+  .mission h2 {
     font-size: clamp(2.2rem, 9vw, 3.1rem);
   }
 
@@ -678,7 +624,6 @@ footer {
     width: auto;
     flex-direction: column;
     gap: 56px;
-
     margin: 0;
     padding: 86px 24px;
   }
@@ -707,18 +652,44 @@ footer {
     padding: 26px;
   }
 
+  .ecosystem {
+    padding: 78px 0 86px;
+  }
+
+  .ecosystem h2 {
+    margin-bottom: 42px;
+    font-size: clamp(2.2rem, 9vw, 3rem);
+  }
+
   .ecosystem-grid {
     grid-template-columns: 1fr;
+    gap: 36px;
   }
 
   .ecosystem-card {
     min-height: auto;
   }
 
+  .ecosystem-card > p:last-child {
+    max-width: 100%;
+  }
+
+  .contact {
+    padding: 80px 0 94px;
+  }
+
+  .contact h2 {
+    font-size: clamp(2.2rem, 9vw, 3rem);
+  }
+
+  footer {
+    padding: 26px 0 30px;
+  }
+
   .footer-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px;
   }
 }
 
@@ -750,14 +721,20 @@ footer {
     font-size: 1.2rem;
   }
 
-  .mission,
-  .ecosystem,
-  .contact {
+  .mission {
     padding: 72px 0;
   }
 
   .products {
     padding: 76px 20px;
+  }
+
+  .ecosystem {
+    padding: 70px 0 78px;
+  }
+
+  .contact {
+    padding: 72px 0 86px;
   }
 
   .actions {
