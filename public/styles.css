@@ -316,7 +316,7 @@ h2 {
   row-gap: 18px;
   align-items: start;
   margin: 0 auto;
-  padding: 110px 0;
+  padding: 16px 0 110px;
 }
 
 .product-heading {
@@ -560,7 +560,7 @@ footer {
   .courieriq-preview {
     align-self: stretch;
     justify-content: flex-start;
-    padding-top: 108px;
+    padding-top: 0;
   }
 }
 
@@ -667,7 +667,7 @@ footer {
       "preview"
       "copy";
     grid-template-rows: auto;
-    gap: 16px;
+    gap: 34px;
     margin: 0;
     padding: 16px 24px 86px;
     scroll-margin-top: 78px;
@@ -691,6 +691,7 @@ footer {
   .courieriq-preview {
     height: auto;
     margin-top: 0;
+    padding-top: 0;
   }
 
   .phone-frame {
