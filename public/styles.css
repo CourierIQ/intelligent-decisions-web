@@ -672,7 +672,7 @@ footer {
       "copy";
     grid-template-rows: auto;
     gap: 34px;
-    margin: 0;
+    margin: 94px 0 0;
     padding: 16px 24px 86px;
     scroll-margin-top: 78px;
   }
