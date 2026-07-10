@@ -554,13 +554,14 @@ footer {
 
 
 /* Desktop CourierIQ preview alignment:
-   keep the existing desktop composition and move only the phone preview down
-   so its top aligns with the product subtitle. */
+   preserve the existing desktop layout and move only the phone preview down
+   so the top of the frame aligns with the product subtitle. */
 @media (min-width: 1051px) {
   .courieriq-preview {
-    align-self: stretch;
+    align-self: start;
     justify-content: flex-start;
-    padding-top: 108px;
+    margin-top: 118px;
+    padding-top: 0;
   }
 }
 
