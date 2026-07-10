@@ -1,5 +1,11 @@
 name = "intelligent-decisions-web"
+main = "src/index.js"
 compatibility_date = "2026-07-09"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[vars]
+SUPABASE_URL = "https://jlbtbpngvqyaiatslphi.supabase.co"
