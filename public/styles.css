@@ -827,3 +827,347 @@ footer {
     border-radius: 32px;
   }
 }
+
+
+/* CourierIQ beta access form */
+
+.beta-access-trigger {
+  appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.nav-cta.beta-access-trigger {
+  background: transparent;
+}
+
+button.btn {
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+body.beta-modal-open {
+  overflow: hidden;
+}
+
+.beta-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.beta-modal[aria-hidden="true"] {
+  display: none;
+}
+
+.beta-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(1, 5, 9, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.beta-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 780px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: clamp(30px, 5vw, 52px);
+  border: 1px solid var(--gold-border);
+  border-radius: 24px;
+  background: linear-gradient(145deg, var(--navy-soft), var(--navy-deep));
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.62);
+  scrollbar-color: rgba(212, 175, 55, 0.45) transparent;
+}
+
+.beta-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.beta-modal-close:hover,
+.beta-modal-close:focus-visible {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--gold);
+}
+
+.beta-form-view > .eyebrow,
+.beta-success > .eyebrow {
+  margin-bottom: 12px;
+}
+
+.beta-form-view > h2,
+.beta-success > h2 {
+  max-width: 620px;
+  margin-bottom: 16px;
+  font-size: clamp(2.15rem, 5vw, 3.45rem);
+}
+
+.beta-modal-intro,
+.beta-success > p:not(.eyebrow) {
+  max-width: 650px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.beta-access-form {
+  margin-top: 30px;
+}
+
+.beta-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.beta-field,
+.beta-platforms {
+  min-width: 0;
+}
+
+.beta-field-wide {
+  grid-column: 1 / -1;
+}
+
+.beta-field > span,
+.beta-platforms legend {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.beta-field strong,
+.beta-platforms strong {
+  color: var(--gold);
+}
+
+.beta-field input,
+.beta-field select,
+.beta-field textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.beta-field input,
+.beta-field select {
+  min-height: 50px;
+  padding: 0 14px;
+}
+
+.beta-field textarea {
+  min-height: 122px;
+  resize: vertical;
+  padding: 13px 14px;
+  line-height: 1.55;
+}
+
+.beta-field select {
+  color-scheme: dark;
+}
+
+.beta-field input::placeholder,
+.beta-field textarea::placeholder {
+  color: #7f8a96;
+}
+
+.beta-field input:focus,
+.beta-field select:focus,
+.beta-field textarea:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.beta-field input:user-invalid,
+.beta-field select:user-invalid,
+.beta-field textarea:user-invalid {
+  border-color: #d56b6b;
+}
+
+.beta-field small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.beta-platforms {
+  padding: 0;
+  border: 0;
+}
+
+.beta-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.beta-platform-grid label {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.beta-platform-grid label:hover {
+  border-color: var(--gold-border);
+  background: rgba(212, 175, 55, 0.045);
+  color: var(--white);
+}
+
+.beta-platform-grid input,
+.beta-consent input {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  accent-color: var(--gold);
+}
+
+.beta-platform-grid label:has(input:checked) {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.085);
+  color: var(--white);
+}
+
+.beta-field-error {
+  min-height: 20px;
+  margin-top: 7px;
+  color: #ef9b9b;
+  font-size: 0.8rem;
+}
+
+.beta-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin: 22px 0 20px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  cursor: pointer;
+}
+
+.beta-consent input {
+  margin-top: 3px;
+}
+
+.beta-turnstile {
+  min-height: 65px;
+  margin-bottom: 8px;
+}
+
+.beta-form-status {
+  min-height: 24px;
+  margin: 10px 0 12px;
+  color: #ef9b9b;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.beta-form-status[data-state="working"] {
+  color: var(--muted);
+}
+
+.beta-submit {
+  min-width: 190px;
+}
+
+.beta-submit:disabled {
+  transform: none;
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.beta-honeypot {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.beta-success {
+  padding: 28px 0 16px;
+  text-align: left;
+}
+
+.beta-success .btn {
+  margin-top: 28px;
+}
+
+@media (max-width: 700px) {
+  .beta-modal {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .beta-modal-panel {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    padding: 34px 20px 26px;
+    border-radius: 22px;
+  }
+
+  .beta-form-grid {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .beta-field-wide {
+    grid-column: auto;
+  }
+
+  .beta-platform-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .beta-submit {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .beta-platform-grid {
+    grid-template-columns: 1fr;
+  }
+}

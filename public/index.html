@@ -18,6 +18,10 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+    defer
+  ></script>
 </head>
 <body>
   <header class="site-header">
@@ -29,7 +33,13 @@
       <a href="#contact">Contact</a>
     </nav>
 
-    <a href="#courieriq" class="nav-cta">Private Beta</a>
+    <button
+      type="button"
+      class="nav-cta beta-access-trigger"
+      data-beta-access-open
+    >
+      Private Beta
+    </button>
   </header>
 
   <main>
@@ -112,12 +122,13 @@
           </article>
         </div>
 
-        <a
-          href="mailto:bhall@intelligentdecisions.io?subject=CourierIQ Private Beta"
-          class="btn primary"
+        <button
+          type="button"
+          class="btn primary beta-access-trigger"
+          data-beta-access-open
         >
           Request Beta Access
-        </a>
+        </button>
       </div>
 
       <div class="courieriq-preview">
@@ -193,6 +204,166 @@
       <p>IDI — Clarity over Complexity.</p>
     </div>
   </footer>
+
+
+  <div
+    id="beta-access-modal"
+    class="beta-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="beta-access-title"
+  >
+    <div class="beta-modal-backdrop" data-beta-access-close></div>
+
+    <div class="beta-modal-panel" role="document">
+      <button
+        type="button"
+        class="beta-modal-close"
+        aria-label="Close beta access form"
+        data-beta-access-close
+      >
+        &times;
+      </button>
+
+      <div class="beta-form-view" data-beta-form-view>
+        <p class="eyebrow">CourierIQ Private Beta</p>
+        <h2 id="beta-access-title">Request beta access.</h2>
+        <p class="beta-modal-intro">
+          Tell us a little about your delivery workflow. We will review your
+          request and contact you as beta capacity becomes available.
+        </p>
+
+        <form id="beta-access-form" class="beta-access-form" novalidate>
+          <div class="beta-form-grid">
+            <label class="beta-field">
+              <span>First name <strong aria-hidden="true">*</strong></span>
+              <input
+                id="beta-first-name"
+                name="first_name"
+                type="text"
+                autocomplete="given-name"
+                maxlength="80"
+                required
+              />
+            </label>
+
+            <label class="beta-field">
+              <span>Email <strong aria-hidden="true">*</strong></span>
+              <input
+                id="beta-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                maxlength="254"
+                required
+              />
+            </label>
+
+            <label class="beta-field">
+              <span>State</span>
+              <input
+                id="beta-state"
+                name="state"
+                type="text"
+                autocomplete="address-level1"
+                minlength="2"
+                maxlength="80"
+                placeholder="Florida"
+              />
+            </label>
+
+            <label class="beta-field">
+              <span>Android device <strong aria-hidden="true">*</strong></span>
+              <input
+                id="beta-device"
+                name="android_device"
+                type="text"
+                minlength="2"
+                maxlength="120"
+                placeholder="Samsung Galaxy S24"
+                required
+              />
+            </label>
+
+            <label class="beta-field beta-field-wide">
+              <span>Approximate deliveries per week <strong aria-hidden="true">*</strong></span>
+              <select id="beta-weekly-deliveries" name="weekly_deliveries" required>
+                <option value="">Select a range</option>
+                <option value="1-10">1–10</option>
+                <option value="11-25">11–25</option>
+                <option value="26-50">26–50</option>
+                <option value="51-100">51–100</option>
+                <option value="100+">100+</option>
+              </select>
+            </label>
+
+            <fieldset class="beta-platforms beta-field-wide">
+              <legend>Delivery platforms used <strong aria-hidden="true">*</strong></legend>
+              <div class="beta-platform-grid">
+                <label><input type="checkbox" name="delivery_platforms" value="Uber Eats" /> <span>Uber Eats</span></label>
+                <label><input type="checkbox" name="delivery_platforms" value="DoorDash" /> <span>DoorDash</span></label>
+                <label><input type="checkbox" name="delivery_platforms" value="Grubhub" /> <span>Grubhub</span></label>
+                <label><input type="checkbox" name="delivery_platforms" value="Spark" /> <span>Spark</span></label>
+                <label><input type="checkbox" name="delivery_platforms" value="Instacart" /> <span>Instacart</span></label>
+                <label><input type="checkbox" name="delivery_platforms" value="Other" /> <span>Other</span></label>
+              </div>
+              <p class="beta-field-error" data-platform-error aria-live="polite"></p>
+            </fieldset>
+
+            <label class="beta-field beta-field-wide">
+              <span>Why are you interested?</span>
+              <textarea
+                id="beta-interest"
+                name="interest_reason"
+                rows="4"
+                maxlength="1000"
+                placeholder="Tell us what you want CourierIQ to help you improve."
+              ></textarea>
+              <small><span data-interest-count>0</span>/1000</small>
+            </label>
+          </div>
+
+          <label class="beta-honeypot" aria-hidden="true">
+            Website
+            <input name="website" type="text" tabindex="-1" autocomplete="off" />
+          </label>
+
+          <label class="beta-consent">
+            <input id="beta-consent" name="consent" type="checkbox" required />
+            <span>
+              I agree that Intelligent Decisions Interactive may contact me
+              regarding CourierIQ private beta access.
+            </span>
+          </label>
+
+          <div
+            id="beta-turnstile"
+            class="beta-turnstile"
+            aria-label="Spam protection verification"
+          ></div>
+
+          <p class="beta-form-status" data-beta-form-status aria-live="polite"></p>
+
+          <button type="submit" class="btn primary beta-submit" data-beta-submit>
+            Submit Request
+          </button>
+        </form>
+      </div>
+
+      <div class="beta-success" data-beta-success hidden>
+        <p class="eyebrow">Request Received</p>
+        <h2 tabindex="-1">You’re on the list.</h2>
+        <p>
+          Your CourierIQ beta request has been submitted. We will review it and
+          contact you as beta capacity becomes available.
+        </p>
+        <button type="button" class="btn primary" data-beta-access-close>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
