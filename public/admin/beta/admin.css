@@ -63,6 +63,12 @@ button:disabled {
   border: 0;
 }
 
+/* Ensure JavaScript-controlled panels fully leave the layout when hidden. */
+.empty-detail[hidden],
+.detail-content[hidden] {
+  display: none !important;
+}
+
 .admin-header {
   position: sticky;
   top: 0;
