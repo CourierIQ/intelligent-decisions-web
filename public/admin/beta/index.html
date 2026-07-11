@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <title>CourierIQ Beta Admin | IDI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/admin/beta/admin.css" />
+    <script src="/admin/beta/admin.js" defer></script>
+  </head>
+  <body>
+    <header class="admin-header">
+      <a class="brand" href="/" aria-label="Return to Intelligent Decisions Interactive">
+        <span class="brand-mark">IDI</span>
+        <span class="brand-copy">
+          <strong>CourierIQ Beta</strong>
+          <small>Administration</small>
+        </span>
+      </a>
+      <div class="admin-header-meta">
+        <span id="adminIdentity">Secure session</span>
+        <button id="refreshButton" class="ghost-button" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <main class="admin-shell">
+      <section class="summary-panel" aria-labelledby="dashboardTitle">
+        <div>
+          <p class="eyebrow">Private Beta Operations</p>
+          <h1 id="dashboardTitle">Applicant management.</h1>
+          <p class="summary-copy">
+            Review requests, record decisions, maintain notes, and manage beta communications.
+          </p>
+        </div>
+        <div class="summary-stats" id="summaryStats" aria-live="polite"></div>
+      </section>
+
+      <section class="workspace" aria-label="Beta applicant workspace">
+        <aside class="applicant-panel">
+          <div class="panel-toolbar">
+            <label class="search-field">
+              <span class="sr-only">Search applicants</span>
+              <input id="searchInput" type="search" placeholder="Search name, email, or device" autocomplete="off" />
+            </label>
+            <label class="filter-field">
+              <span class="sr-only">Filter by status</span>
+              <select id="statusFilter">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="invited">Invited</option>
+                <option value="active">Active</option>
+                <option value="declined">Declined</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="listState" class="list-state">Loading applicants…</div>
+          <div id="applicantList" class="applicant-list" role="list"></div>
+        </aside>
+
+        <section class="detail-panel" aria-live="polite">
+          <div id="emptyDetail" class="empty-detail">
+            <p class="eyebrow">Applicant Detail</p>
+            <h2>Select a request.</h2>
+            <p>Choose an applicant to review their workflow, contact details, email status, and decision history.</p>
+          </div>
+
+          <div id="detailContent" hidden>
+            <div class="detail-heading">
+              <div>
+                <p class="eyebrow">Applicant Detail</p>
+                <h2 id="detailName"></h2>
+                <a id="detailEmail" class="detail-email" href="#"></a>
+              </div>
+              <span id="detailStatus" class="status-pill"></span>
+            </div>
+
+            <div id="detailMessage" class="inline-message" role="status"></div>
+
+            <div class="detail-grid">
+              <article class="detail-card">
+                <h3>Delivery profile</h3>
+                <dl id="profileDetails"></dl>
+              </article>
+
+              <article class="detail-card">
+                <h3>Communication</h3>
+                <dl id="emailDetails"></dl>
+                <div class="email-actions">
+                  <button id="retryAdminEmail" class="small-button" type="button">Retry admin email</button>
+                  <button id="retryApplicantEmail" class="small-button" type="button">Retry confirmation</button>
+                </div>
+              </article>
+            </div>
+
+            <article class="detail-card interest-card">
+              <h3>Why they are interested</h3>
+              <p id="interestReason"></p>
+            </article>
+
+            <form id="reviewForm" class="review-card">
+              <div class="review-heading">
+                <div>
+                  <h3>Review decision</h3>
+                  <p>Changes are logged to the applicant history.</p>
+                </div>
+                <button id="saveReviewButton" class="primary-button" type="submit">Save Review</button>
+              </div>
+
+              <div class="review-grid">
+                <label>
+                  <span>Status</span>
+                  <select id="reviewStatus" name="status">
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="invited">Invited</option>
+                    <option value="active">Active</option>
+                    <option value="declined">Declined</option>
+                  </select>
+                </label>
+
+                <div class="invite-control">
+                  <span>Beta invitation</span>
+                  <button id="sendInviteButton" class="secondary-button" type="button">Send Invitation</button>
+                  <small id="inviteHelp"></small>
+                </div>
+              </div>
+
+              <label class="notes-field">
+                <span>Private admin notes</span>
+                <textarea id="adminNotes" name="admin_notes" maxlength="5000" placeholder="Decision context, follow-up notes, tester fit, or concerns"></textarea>
+                <small><span id="notesCount">0</span>/5000</small>
+              </label>
+            </form>
+
+            <article class="history-card">
+              <div class="history-heading">
+                <h3>Activity history</h3>
+                <span id="historyCount"></span>
+              </div>
+              <div id="historyList" class="history-list"></div>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

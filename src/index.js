@@ -4,7 +4,7 @@ const ALLOWED_HOSTNAMES = new Set([
   "intelligentdecisions.io",
   "www.intelligentdecisions.io",
 ]);
-
+const ADMIN_EMAIL = "bhall@intelligentdecisions.io";
 const ALLOWED_PLATFORMS = new Set([
   "Uber Eats",
   "DoorDash",
@@ -13,7 +13,6 @@ const ALLOWED_PLATFORMS = new Set([
   "Instacart",
   "Other",
 ]);
-
 const ALLOWED_WEEKLY_DELIVERIES = new Set([
   "1-10",
   "11-25",
@@ -21,12 +20,44 @@ const ALLOWED_WEEKLY_DELIVERIES = new Set([
   "51-100",
   "100+",
 ]);
-
+const ALLOWED_STATUSES = new Set([
+  "pending",
+  "approved",
+  "invited",
+  "active",
+  "declined",
+]);
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const TURNSTILE_ENDPOINT =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-const BETA_FROM_EMAIL = "CourierIQ Beta <beta@intelligentdecisions.io>";
-const BETA_NOTIFICATION_TO = "bhall@intelligentdecisions.io";
+const BETA_FROM_EMAIL =
+  "CourierIQ Beta <beta@intelligentdecisions.io>";
+const BETA_NOTIFICATION_TO = ADMIN_EMAIL;
+const ADMIN_REQUEST_SELECT = [
+  "id",
+  "first_name",
+  "email",
+  "state",
+  "android_device",
+  "delivery_platforms",
+  "weekly_deliveries",
+  "interest_reason",
+  "status",
+  "admin_notes",
+  "reviewed_at",
+  "reviewed_by",
+  "invited_at",
+  "invite_resend_id",
+  "invite_email_status",
+  "invite_email_error",
+  "admin_email_status",
+  "applicant_email_status",
+  "admin_resend_id",
+  "applicant_resend_id",
+  "last_email_error",
+  "created_at",
+  "updated_at",
+].join(",");
 
 function jsonResponse(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
@@ -41,10 +72,7 @@ function jsonResponse(body, status = 200, extraHeaders = {}) {
 }
 
 function cleanString(value, maximumLength) {
-  if (typeof value !== "string") {
-    return "";
-  }
-
+  if (typeof value !== "string") return "";
   return value.replace(/\0/g, "").trim().slice(0, maximumLength);
 }
 
@@ -57,17 +85,37 @@ function isValidEmail(email) {
 
 function isAllowedOrigin(request) {
   const origin = request.headers.get("Origin");
-
-  if (!origin) {
-    return true;
-  }
+  if (!origin) return true;
 
   try {
     const originUrl = new URL(origin);
-    return originUrl.protocol === "https:" && ALLOWED_HOSTNAMES.has(originUrl.hostname);
+    return (
+      originUrl.protocol === "https:" &&
+      ALLOWED_HOSTNAMES.has(originUrl.hostname)
+    );
   } catch {
     return false;
   }
+}
+
+function getAccessEmail(request) {
+  return cleanString(
+    request.headers.get("cf-access-authenticated-user-email"),
+    254,
+  ).toLowerCase();
+}
+
+function requireAdmin(request) {
+  const email = getAccessEmail(request);
+  if (!email || email !== ADMIN_EMAIL) {
+    return {
+      response: jsonResponse(
+        { success: false, message: "Administrator access is required." },
+        403,
+      ),
+    };
+  }
+  return { email };
 }
 
 function validateSubmission(payload) {
@@ -79,7 +127,6 @@ function validateSubmission(payload) {
   const interestReason = cleanString(payload.interest_reason, 1000);
   const turnstileToken = cleanString(payload.turnstile_token, 2048);
   const website = cleanString(payload.website, 200);
-
   const deliveryPlatforms = Array.isArray(payload.delivery_platforms)
     ? [
         ...new Set(
@@ -90,38 +137,22 @@ function validateSubmission(payload) {
       ]
     : [];
 
-  if (website) {
-    return { honeypot: true };
-  }
-
-  if (firstName.length < 1) {
-    return { error: "Enter your first name." };
-  }
-
-  if (!isValidEmail(email)) {
-    return { error: "Enter a valid email address." };
-  }
-
-  if (state && state.length < 2) {
-    return { error: "Enter a valid state." };
-  }
-
+  if (website) return { honeypot: true };
+  if (firstName.length < 1) return { error: "Enter your first name." };
+  if (!isValidEmail(email)) return { error: "Enter a valid email address." };
+  if (state && state.length < 2) return { error: "Enter a valid state." };
   if (androidDevice.length < 2) {
     return { error: "Enter the Android device you use." };
   }
-
   if (!deliveryPlatforms.length) {
     return { error: "Select at least one delivery platform." };
   }
-
   if (!ALLOWED_WEEKLY_DELIVERIES.has(weeklyDeliveries)) {
     return { error: "Select your approximate deliveries per week." };
   }
-
   if (payload.consent !== true) {
     return { error: "Consent is required to request beta access." };
   }
-
   if (!turnstileToken) {
     return { error: "Complete the verification before submitting." };
   }
@@ -145,10 +176,7 @@ async function fetchWithTimeout(resource, options = {}, timeoutMs = 10000) {
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(resource, {
-      ...options,
-      signal: controller.signal,
-    });
+    return await fetch(resource, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
@@ -156,7 +184,6 @@ async function fetchWithTimeout(resource, options = {}, timeoutMs = 10000) {
 
 async function verifyTurnstile(token, request, env) {
   const remoteIp = request.headers.get("CF-Connecting-IP") || undefined;
-
   let response;
 
   try {
@@ -164,9 +191,7 @@ async function verifyTurnstile(token, request, env) {
       TURNSTILE_ENDPOINT,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           secret: env.TURNSTILE_SECRET_KEY,
           response: token,
@@ -187,13 +212,11 @@ async function verifyTurnstile(token, request, env) {
   }
 
   const result = await response.json();
-  const hostnameAllowed = ALLOWED_HOSTNAMES.has(result.hostname);
-
   return {
     success:
       result.success === true &&
       result.action === "beta_access" &&
-      hostnameAllowed,
+      ALLOWED_HOSTNAMES.has(result.hostname),
   };
 }
 
@@ -204,16 +227,12 @@ function supabaseHeaders(env, prefer) {
     apikey: env.SUPABASE_SECRET_KEY,
   };
 
-  // Legacy service_role keys are JWTs and need Authorization. New sb_secret_
-  // keys must be passed through the apikey header instead.
+  // Legacy service_role JWTs require Authorization. New sb_secret_ keys
+  // are passed through the apikey header only.
   if (!env.SUPABASE_SECRET_KEY.startsWith("sb_")) {
     headers.Authorization = `Bearer ${env.SUPABASE_SECRET_KEY}`;
   }
-
-  if (prefer) {
-    headers.Prefer = prefer;
-  }
-
+  if (prefer) headers.Prefer = prefer;
   return headers;
 }
 
@@ -221,14 +240,39 @@ function supabaseBaseUrl(env) {
   return env.SUPABASE_URL.replace(/\/+$/, "");
 }
 
-async function upsertApplication(application, env) {
-  const endpoint =
-    `${supabaseBaseUrl(env)}/rest/v1/beta_access_requests` +
-    "?on_conflict=email_normalized" +
-    "&select=id,status,admin_email_status,applicant_email_status,created_at";
-
+async function supabaseRequest(path, options, env, timeoutMs = 10000) {
   const response = await fetchWithTimeout(
-    endpoint,
+    `${supabaseBaseUrl(env)}/rest/v1/${path}`,
+    options,
+    timeoutMs,
+  );
+  const text = await response.text();
+  let body = null;
+
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Supabase request failed (${response.status}): ${String(text).slice(0, 500)}`,
+    );
+  }
+
+  return { response, body };
+}
+
+async function upsertApplication(application, env) {
+  const query =
+    "beta_access_requests?on_conflict=email_normalized" +
+    "&select=id,status,admin_email_status,applicant_email_status,created_at";
+  const now = new Date().toISOString();
+  const { body } = await supabaseRequest(
+    query,
     {
       method: "POST",
       headers: supabaseHeaders(
@@ -244,57 +288,95 @@ async function upsertApplication(application, env) {
           delivery_platforms: application.deliveryPlatforms,
           weekly_deliveries: application.weeklyDeliveries,
           interest_reason: application.interestReason,
-          consent_at: new Date().toISOString(),
+          consent_at: now,
           source: "idi_website",
-          updated_at: new Date().toISOString(),
+          updated_at: now,
         },
       ]),
     },
-    10000,
+    env,
   );
 
-  const responseText = await response.text();
-
-  if (!response.ok) {
-    throw new Error(
-      `Supabase upsert failed (${response.status}): ${responseText.slice(0, 500)}`,
-    );
-  }
-
-  const rows = responseText ? JSON.parse(responseText) : [];
-  const storedApplication = rows[0];
-
+  const storedApplication = Array.isArray(body) ? body[0] : null;
   if (!storedApplication?.id) {
     throw new Error("Supabase did not return the stored application.");
   }
-
   return storedApplication;
 }
 
-async function updateApplicationEmailStatus(applicationId, changes, env) {
-  const endpoint =
-    `${supabaseBaseUrl(env)}/rest/v1/beta_access_requests` +
-    `?id=eq.${encodeURIComponent(applicationId)}`;
-
-  const response = await fetchWithTimeout(
-    endpoint,
+async function updateApplication(applicationId, changes, env, select = "") {
+  const query =
+    `beta_access_requests?id=eq.${encodeURIComponent(applicationId)}` +
+    (select ? `&select=${encodeURIComponent(select)}` : "");
+  const { body } = await supabaseRequest(
+    query,
     {
       method: "PATCH",
-      headers: supabaseHeaders(env, "return=minimal"),
+      headers: supabaseHeaders(
+        env,
+        select ? "return=representation" : "return=minimal",
+      ),
       body: JSON.stringify({
         ...changes,
         updated_at: new Date().toISOString(),
       }),
     },
-    10000,
+    env,
   );
+  return select && Array.isArray(body) ? body[0] : null;
+}
 
-  if (!response.ok) {
-    const responseText = await response.text();
-    throw new Error(
-      `Supabase status update failed (${response.status}): ${responseText.slice(0, 500)}`,
-    );
+async function getApplication(applicationId, env) {
+  const query =
+    `beta_access_requests?id=eq.${encodeURIComponent(applicationId)}` +
+    `&select=${encodeURIComponent(ADMIN_REQUEST_SELECT)}&limit=1`;
+  const { body } = await supabaseRequest(
+    query,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  return Array.isArray(body) ? body[0] || null : null;
+}
+
+async function listApplications(status, env) {
+  let query =
+    `beta_access_requests?select=${encodeURIComponent(ADMIN_REQUEST_SELECT)}` +
+    "&order=created_at.desc&limit=250";
+  if (status && ALLOWED_STATUSES.has(status)) {
+    query += `&status=eq.${encodeURIComponent(status)}`;
   }
+  const { body } = await supabaseRequest(
+    query,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  return Array.isArray(body) ? body : [];
+}
+
+async function listEvents(applicationId, env) {
+  const query =
+    "beta_access_request_events" +
+    `?request_id=eq.${encodeURIComponent(applicationId)}` +
+    "&select=id,event_type,actor_email,previous_status,new_status,details,created_at" +
+    "&order=created_at.desc&limit=100";
+  const { body } = await supabaseRequest(
+    query,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  return Array.isArray(body) ? body : [];
+}
+
+async function insertEvent(event, env) {
+  await supabaseRequest(
+    "beta_access_request_events",
+    {
+      method: "POST",
+      headers: supabaseHeaders(env, "return=minimal"),
+      body: JSON.stringify([event]),
+    },
+    env,
+  );
 }
 
 function escapeHtml(value) {
@@ -306,12 +388,12 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function formatSubmissionTime() {
+function formatSubmissionTime(value = new Date()) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "long",
     timeStyle: "short",
     timeZone: "America/New_York",
-  }).format(new Date());
+  }).format(new Date(value));
 }
 
 async function sendResendEmail(message, idempotencyKey, env) {
@@ -331,7 +413,6 @@ async function sendResendEmail(message, idempotencyKey, env) {
 
   const responseText = await response.text();
   let result = {};
-
   if (responseText) {
     try {
       result = JSON.parse(responseText);
@@ -347,7 +428,6 @@ async function sendResendEmail(message, idempotencyKey, env) {
       }`,
     );
   }
-
   return result.id;
 }
 
@@ -367,19 +447,15 @@ function buildAdminEmail(application) {
       { name: "source", value: "idi-website" },
     ],
     html: `
-      <div style="font-family:Arial,Helvetica,sans-serif;color:#17202a;line-height:1.6;max-width:680px;margin:0 auto;">
-        <h1 style="font-size:24px;margin:0 0 20px;">New CourierIQ beta request</h1>
-        <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:8px 0;font-weight:700;width:190px;">Applicant</td><td style="padding:8px 0;">${escapeHtml(application.firstName)}</td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;">Email</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(application.email)}">${escapeHtml(application.email)}</a></td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;">State</td><td style="padding:8px 0;">${escapeHtml(state)}</td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;">Android device</td><td style="padding:8px 0;">${escapeHtml(application.androidDevice)}</td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;">Platforms</td><td style="padding:8px 0;">${escapeHtml(platforms)}</td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;">Deliveries per week</td><td style="padding:8px 0;">${escapeHtml(application.weeklyDeliveries)}</td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;vertical-align:top;">Interest</td><td style="padding:8px 0;">${escapeHtml(reason).replaceAll("\n", "<br>")}</td></tr>
-          <tr><td style="padding:8px 0;font-weight:700;">Submitted</td><td style="padding:8px 0;">${escapeHtml(submittedAt)} ET</td></tr>
-        </table>
-      </div>
+      <h1>New CourierIQ beta request</h1>
+      <p><strong>Applicant:</strong> ${escapeHtml(application.firstName)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(application.email)}</p>
+      <p><strong>State:</strong> ${escapeHtml(state)}</p>
+      <p><strong>Android device:</strong> ${escapeHtml(application.androidDevice)}</p>
+      <p><strong>Platforms:</strong> ${escapeHtml(platforms)}</p>
+      <p><strong>Deliveries per week:</strong> ${escapeHtml(application.weeklyDeliveries)}</p>
+      <p><strong>Interest:</strong><br>${escapeHtml(reason).replaceAll("\n", "<br>")}</p>
+      <p><strong>Submitted:</strong> ${escapeHtml(submittedAt)} ET</p>
     `,
     text: [
       "New CourierIQ beta request",
@@ -407,13 +483,11 @@ function buildApplicantEmail(application) {
       { name: "source", value: "idi-website" },
     ],
     html: `
-      <div style="font-family:Arial,Helvetica,sans-serif;color:#17202a;line-height:1.7;max-width:620px;margin:0 auto;">
-        <h1 style="font-size:24px;margin:0 0 18px;">We received your request.</h1>
-        <p>Hi ${escapeHtml(application.firstName)},</p>
-        <p>Thanks for requesting access to the CourierIQ private beta.</p>
-        <p>We have received your information and will review it as beta capacity becomes available. Submitting a request does not guarantee immediate access.</p>
-        <p style="margin-top:28px;">— Intelligent Decisions Interactive<br><strong>Clarity over Complexity.</strong></p>
-      </div>
+      <h1>We received your request.</h1>
+      <p>Hi ${escapeHtml(application.firstName)},</p>
+      <p>Thanks for requesting access to the CourierIQ private beta.</p>
+      <p>We have received your information and will review it as beta capacity becomes available. Submitting a request does not guarantee immediate access.</p>
+      <p>— Intelligent Decisions Interactive<br>Clarity over Complexity.</p>
     `,
     text: [
       `Hi ${application.firstName},`,
@@ -428,10 +502,60 @@ function buildApplicantEmail(application) {
   };
 }
 
+function buildStoredAdminEmail(application) {
+  return buildAdminEmail({
+    firstName: application.first_name,
+    email: application.email,
+    state: application.state,
+    androidDevice: application.android_device,
+    deliveryPlatforms: application.delivery_platforms || [],
+    weeklyDeliveries: application.weekly_deliveries,
+    interestReason: application.interest_reason,
+  });
+}
+
+function buildStoredApplicantEmail(application) {
+  return buildApplicantEmail({
+    firstName: application.first_name,
+    email: application.email,
+  });
+}
+
+function buildInviteEmail(application, inviteUrl) {
+  return {
+    from: BETA_FROM_EMAIL,
+    to: [application.email],
+    subject: "Your CourierIQ private beta invitation",
+    reply_to: BETA_NOTIFICATION_TO,
+    tags: [
+      { name: "type", value: "beta-invitation" },
+      { name: "source", value: "idi-admin" },
+    ],
+    html: `
+      <h1>Welcome to the CourierIQ private beta.</h1>
+      <p>Hi ${escapeHtml(application.first_name)},</p>
+      <p>Your CourierIQ private beta request has been approved.</p>
+      <p><a href="${escapeHtml(inviteUrl)}">Open your beta invitation</a></p>
+      <p>This invitation is intended for you. Please do not redistribute the download or access link.</p>
+      <p>— Intelligent Decisions Interactive<br>Clarity over Complexity.</p>
+    `,
+    text: [
+      `Hi ${application.first_name},`,
+      "",
+      "Your CourierIQ private beta request has been approved.",
+      "",
+      `Open your beta invitation: ${inviteUrl}`,
+      "",
+      "This invitation is intended for you. Please do not redistribute the download or access link.",
+      "",
+      "— Intelligent Decisions Interactive",
+      "Clarity over Complexity.",
+    ].join("\n"),
+  };
+}
+
 async function processAdminNotification(application, storedApplication, env) {
-  if (storedApplication.admin_email_status === "sent") {
-    return;
-  }
+  if (storedApplication.admin_email_status === "sent") return;
 
   try {
     const resendId = await sendResendEmail(
@@ -439,20 +563,19 @@ async function processAdminNotification(application, storedApplication, env) {
       `beta-admin/${storedApplication.id}`,
       env,
     );
-
-    await updateApplicationEmailStatus(
+    await updateApplication(
       storedApplication.id,
       {
         admin_email_status: "sent",
         admin_resend_id: resendId,
+        last_email_error: null,
       },
       env,
     );
   } catch (error) {
     console.error("Admin beta email failed", error);
-
     try {
-      await updateApplicationEmailStatus(
+      await updateApplication(
         storedApplication.id,
         {
           admin_email_status: "failed",
@@ -467,9 +590,7 @@ async function processAdminNotification(application, storedApplication, env) {
 }
 
 async function processApplicantConfirmation(application, storedApplication, env) {
-  if (storedApplication.applicant_email_status === "sent") {
-    return;
-  }
+  if (storedApplication.applicant_email_status === "sent") return;
 
   try {
     const resendId = await sendResendEmail(
@@ -477,20 +598,19 @@ async function processApplicantConfirmation(application, storedApplication, env)
       `beta-applicant/${storedApplication.id}`,
       env,
     );
-
-    await updateApplicationEmailStatus(
+    await updateApplication(
       storedApplication.id,
       {
         applicant_email_status: "sent",
         applicant_resend_id: resendId,
+        last_email_error: null,
       },
       env,
     );
   } catch (error) {
     console.error("Applicant beta email failed", error);
-
     try {
-      await updateApplicationEmailStatus(
+      await updateApplication(
         storedApplication.id,
         {
           applicant_email_status: "failed",
@@ -504,6 +624,35 @@ async function processApplicantConfirmation(application, storedApplication, env)
   }
 }
 
+async function readJsonRequest(request, maxLength = 20000) {
+  const contentType = request.headers.get("Content-Type") || "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return { response: jsonResponse({ success: false, message: "Request must use JSON." }, 415) };
+  }
+
+  const declaredLength = Number(request.headers.get("Content-Length") || 0);
+  if (declaredLength > maxLength) {
+    return { response: jsonResponse({ success: false, message: "Request is too large." }, 413) };
+  }
+
+  let rawBody;
+  try {
+    rawBody = await request.text();
+  } catch {
+    return { response: jsonResponse({ success: false, message: "Request could not be read." }, 400) };
+  }
+
+  if (rawBody.length > maxLength) {
+    return { response: jsonResponse({ success: false, message: "Request is too large." }, 413) };
+  }
+
+  try {
+    return { payload: JSON.parse(rawBody || "{}") };
+  } catch {
+    return { response: jsonResponse({ success: false, message: "Request contains invalid JSON." }, 400) };
+  }
+}
+
 async function handleBetaAccess(request, env) {
   if (request.method !== "POST") {
     return jsonResponse(
@@ -512,7 +661,6 @@ async function handleBetaAccess(request, env) {
       { Allow: "POST" },
     );
   }
-
   if (!isAllowedOrigin(request)) {
     return jsonResponse(
       { success: false, message: "Request origin is not allowed." },
@@ -526,7 +674,6 @@ async function handleBetaAccess(request, env) {
     "RESEND_API_KEY",
     "TURNSTILE_SECRET_KEY",
   ];
-
   if (requiredBindings.some((binding) => !env[binding])) {
     console.error("Beta access endpoint is missing required bindings.");
     return jsonResponse(
@@ -538,54 +685,9 @@ async function handleBetaAccess(request, env) {
     );
   }
 
-  const contentType = request.headers.get("Content-Type") || "";
-
-  if (!contentType.toLowerCase().includes("application/json")) {
-    return jsonResponse(
-      { success: false, message: "Request must use JSON." },
-      415,
-    );
-  }
-
-  const declaredLength = Number(request.headers.get("Content-Length") || 0);
-
-  if (declaredLength > 20000) {
-    return jsonResponse(
-      { success: false, message: "Request is too large." },
-      413,
-    );
-  }
-
-  let rawBody;
-
-  try {
-    rawBody = await request.text();
-  } catch {
-    return jsonResponse(
-      { success: false, message: "Request could not be read." },
-      400,
-    );
-  }
-
-  if (rawBody.length > 20000) {
-    return jsonResponse(
-      { success: false, message: "Request is too large." },
-      413,
-    );
-  }
-
-  let payload;
-
-  try {
-    payload = JSON.parse(rawBody);
-  } catch {
-    return jsonResponse(
-      { success: false, message: "Request contains invalid JSON." },
-      400,
-    );
-  }
-
-  const validation = validateSubmission(payload);
+  const parsed = await readJsonRequest(request);
+  if (parsed.response) return parsed.response;
+  const validation = validateSubmission(parsed.payload);
 
   // Quietly accept honeypot submissions without storing or sending anything.
   if (validation.honeypot) {
@@ -594,12 +696,8 @@ async function handleBetaAccess(request, env) {
       message: "Your CourierIQ beta request has been received.",
     });
   }
-
   if (validation.error) {
-    return jsonResponse(
-      { success: false, message: validation.error },
-      400,
-    );
+    return jsonResponse({ success: false, message: validation.error }, 400);
   }
 
   const turnstile = await verifyTurnstile(
@@ -607,7 +705,6 @@ async function handleBetaAccess(request, env) {
     request,
     env,
   );
-
   if (turnstile.serviceError) {
     return jsonResponse(
       {
@@ -617,7 +714,6 @@ async function handleBetaAccess(request, env) {
       503,
     );
   }
-
   if (!turnstile.success) {
     return jsonResponse(
       {
@@ -629,7 +725,6 @@ async function handleBetaAccess(request, env) {
   }
 
   let storedApplication;
-
   try {
     storedApplication = await upsertApplication(validation.data, env);
   } catch (error) {
@@ -654,6 +749,323 @@ async function handleBetaAccess(request, env) {
   });
 }
 
+async function handleAdminList(request, env, actorEmail) {
+  if (request.method !== "GET") {
+    return jsonResponse({ success: false, message: "Method not allowed." }, 405, { Allow: "GET" });
+  }
+  const url = new URL(request.url);
+  const status = cleanString(url.searchParams.get("status"), 20).toLowerCase();
+
+  try {
+    const applications = await listApplications(status, env);
+    return jsonResponse({
+      success: true,
+      actorEmail,
+      inviteEnabled: Boolean(env.BETA_INVITE_URL),
+      applications,
+    });
+  } catch (error) {
+    console.error("Admin list failed", error);
+    return jsonResponse({ success: false, message: "Applications could not be loaded." }, 503);
+  }
+}
+
+async function handleAdminDetail(request, env, actorEmail, applicationId) {
+  if (request.method !== "GET") {
+    return jsonResponse({ success: false, message: "Method not allowed." }, 405, { Allow: "GET" });
+  }
+
+  try {
+    const [application, events] = await Promise.all([
+      getApplication(applicationId, env),
+      listEvents(applicationId, env),
+    ]);
+    if (!application) {
+      return jsonResponse({ success: false, message: "Application not found." }, 404);
+    }
+    return jsonResponse({
+      success: true,
+      actorEmail,
+      inviteEnabled: Boolean(env.BETA_INVITE_URL),
+      application,
+      events,
+    });
+  } catch (error) {
+    console.error("Admin detail failed", error);
+    return jsonResponse({ success: false, message: "Application details could not be loaded." }, 503);
+  }
+}
+
+async function handleAdminUpdate(request, env, actorEmail, applicationId) {
+  if (request.method !== "PATCH") {
+    return jsonResponse({ success: false, message: "Method not allowed." }, 405, { Allow: "PATCH" });
+  }
+  if (!isAllowedOrigin(request)) {
+    return jsonResponse({ success: false, message: "Request origin is not allowed." }, 403);
+  }
+
+  const parsed = await readJsonRequest(request, 12000);
+  if (parsed.response) return parsed.response;
+
+  const current = await getApplication(applicationId, env);
+  if (!current) {
+    return jsonResponse({ success: false, message: "Application not found." }, 404);
+  }
+
+  const changes = {};
+  const events = [];
+  if (Object.prototype.hasOwnProperty.call(parsed.payload, "status")) {
+    const status = cleanString(parsed.payload.status, 20).toLowerCase();
+    if (!ALLOWED_STATUSES.has(status)) {
+      return jsonResponse({ success: false, message: "Invalid application status." }, 400);
+    }
+    if (status !== current.status) {
+      changes.status = status;
+      changes.reviewed_at = new Date().toISOString();
+      changes.reviewed_by = actorEmail;
+      events.push({
+        request_id: applicationId,
+        event_type: "status_changed",
+        actor_email: actorEmail,
+        previous_status: current.status,
+        new_status: status,
+        details: {},
+      });
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parsed.payload, "admin_notes")) {
+    const adminNotes = cleanString(parsed.payload.admin_notes, 5000);
+    if (adminNotes !== (current.admin_notes || "")) {
+      changes.admin_notes = adminNotes || null;
+      events.push({
+        request_id: applicationId,
+        event_type: "notes_updated",
+        actor_email: actorEmail,
+        previous_status: current.status,
+        new_status: changes.status || current.status,
+        details: { note_length: adminNotes.length },
+      });
+    }
+  }
+
+  if (!Object.keys(changes).length) {
+    return jsonResponse({ success: true, application: current, events: await listEvents(applicationId, env) });
+  }
+
+  try {
+    const updated = await updateApplication(
+      applicationId,
+      changes,
+      env,
+      ADMIN_REQUEST_SELECT,
+    );
+    for (const event of events) {
+      await insertEvent(event, env);
+    }
+    return jsonResponse({
+      success: true,
+      application: updated,
+      events: await listEvents(applicationId, env),
+    });
+  } catch (error) {
+    console.error("Admin update failed", error);
+    return jsonResponse({ success: false, message: "Application could not be updated." }, 503);
+  }
+}
+
+async function handleAdminRetry(request, env, actorEmail, applicationId) {
+  if (request.method !== "POST") {
+    return jsonResponse({ success: false, message: "Method not allowed." }, 405, { Allow: "POST" });
+  }
+  if (!isAllowedOrigin(request)) {
+    return jsonResponse({ success: false, message: "Request origin is not allowed." }, 403);
+  }
+
+  const parsed = await readJsonRequest(request, 2000);
+  if (parsed.response) return parsed.response;
+  const type = cleanString(parsed.payload.type, 30);
+  if (!new Set(["admin", "applicant"]).has(type)) {
+    return jsonResponse({ success: false, message: "Invalid email retry type." }, 400);
+  }
+
+  const application = await getApplication(applicationId, env);
+  if (!application) {
+    return jsonResponse({ success: false, message: "Application not found." }, 404);
+  }
+
+  try {
+    const message = type === "admin"
+      ? buildStoredAdminEmail(application)
+      : buildStoredApplicantEmail(application);
+    const resendId = await sendResendEmail(
+      message,
+      `beta-retry-${type}/${applicationId}/${crypto.randomUUID()}`,
+      env,
+    );
+    const changes = type === "admin"
+      ? {
+          admin_email_status: "sent",
+          admin_resend_id: resendId,
+          last_email_error: null,
+        }
+      : {
+          applicant_email_status: "sent",
+          applicant_resend_id: resendId,
+          last_email_error: null,
+        };
+    const updated = await updateApplication(
+      applicationId,
+      changes,
+      env,
+      ADMIN_REQUEST_SELECT,
+    );
+    await insertEvent(
+      {
+        request_id: applicationId,
+        event_type: "email_retried",
+        actor_email: actorEmail,
+        previous_status: application.status,
+        new_status: application.status,
+        details: { type, resend_id: resendId },
+      },
+      env,
+    );
+    return jsonResponse({
+      success: true,
+      application: updated,
+      events: await listEvents(applicationId, env),
+    });
+  } catch (error) {
+    console.error("Email retry failed", error);
+    const changes = type === "admin"
+      ? { admin_email_status: "failed", last_email_error: String(error).slice(0, 1000) }
+      : { applicant_email_status: "failed", last_email_error: String(error).slice(0, 1000) };
+    await updateApplication(applicationId, changes, env).catch(() => {});
+    return jsonResponse({ success: false, message: "The email could not be sent." }, 503);
+  }
+}
+
+async function handleAdminInvite(request, env, actorEmail, applicationId) {
+  if (request.method !== "POST") {
+    return jsonResponse({ success: false, message: "Method not allowed." }, 405, { Allow: "POST" });
+  }
+  if (!isAllowedOrigin(request)) {
+    return jsonResponse({ success: false, message: "Request origin is not allowed." }, 403);
+  }
+  if (!env.BETA_INVITE_URL) {
+    return jsonResponse(
+      {
+        success: false,
+        message: "Invitation delivery is not configured yet.",
+      },
+      409,
+    );
+  }
+
+  const application = await getApplication(applicationId, env);
+  if (!application) {
+    return jsonResponse({ success: false, message: "Application not found." }, 404);
+  }
+  if (!["approved", "invited"].includes(application.status)) {
+    return jsonResponse(
+      { success: false, message: "Approve the applicant before sending an invitation." },
+      409,
+    );
+  }
+
+  try {
+    await updateApplication(applicationId, { invite_email_status: "pending" }, env);
+    const resendId = await sendResendEmail(
+      buildInviteEmail(application, env.BETA_INVITE_URL),
+      `beta-invite/${applicationId}/${crypto.randomUUID()}`,
+      env,
+    );
+    const invitedAt = new Date().toISOString();
+    const updated = await updateApplication(
+      applicationId,
+      {
+        status: "invited",
+        invited_at: invitedAt,
+        invite_resend_id: resendId,
+        invite_email_status: "sent",
+        invite_email_error: null,
+        reviewed_at: invitedAt,
+        reviewed_by: actorEmail,
+      },
+      env,
+      ADMIN_REQUEST_SELECT,
+    );
+    await insertEvent(
+      {
+        request_id: applicationId,
+        event_type: "invite_sent",
+        actor_email: actorEmail,
+        previous_status: application.status,
+        new_status: "invited",
+        details: { resend_id: resendId },
+      },
+      env,
+    );
+    return jsonResponse({
+      success: true,
+      application: updated,
+      events: await listEvents(applicationId, env),
+    });
+  } catch (error) {
+    console.error("Invite failed", error);
+    await updateApplication(
+      applicationId,
+      {
+        invite_email_status: "failed",
+        invite_email_error: String(error).slice(0, 1000),
+      },
+      env,
+    ).catch(() => {});
+    await insertEvent(
+      {
+        request_id: applicationId,
+        event_type: "invite_failed",
+        actor_email: actorEmail,
+        previous_status: application.status,
+        new_status: application.status,
+        details: { error: String(error).slice(0, 500) },
+      },
+      env,
+    ).catch(() => {});
+    return jsonResponse({ success: false, message: "The invitation could not be sent." }, 503);
+  }
+}
+
+async function handleAdminApi(request, env, url) {
+  const admin = requireAdmin(request);
+  if (admin.response) return admin.response;
+
+  const pathname = url.pathname.replace(/\/+$/, "") || "/";
+  if (pathname === "/admin/api/requests") {
+    return handleAdminList(request, env, admin.email);
+  }
+
+  const detailMatch = pathname.match(/^\/admin\/api\/requests\/([0-9a-f-]{36})$/i);
+  if (detailMatch) {
+    return request.method === "PATCH"
+      ? handleAdminUpdate(request, env, admin.email, detailMatch[1])
+      : handleAdminDetail(request, env, admin.email, detailMatch[1]);
+  }
+
+  const retryMatch = pathname.match(/^\/admin\/api\/requests\/([0-9a-f-]{36})\/retry-email$/i);
+  if (retryMatch) {
+    return handleAdminRetry(request, env, admin.email, retryMatch[1]);
+  }
+
+  const inviteMatch = pathname.match(/^\/admin\/api\/requests\/([0-9a-f-]{36})\/invite$/i);
+  if (inviteMatch) {
+    return handleAdminInvite(request, env, admin.email, inviteMatch[1]);
+  }
+
+  return jsonResponse({ success: false, message: "Admin API route not found." }, 404);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -666,7 +1078,6 @@ export default {
           { Allow: "GET" },
         );
       }
-
       return jsonResponse({
         success: true,
         service: "intelligent-decisions-web",
@@ -675,6 +1086,7 @@ export default {
         supabaseSecretConfigured: Boolean(env.SUPABASE_SECRET_KEY),
         resendConfigured: Boolean(env.RESEND_API_KEY),
         turnstileConfigured: Boolean(env.TURNSTILE_SECRET_KEY),
+        betaInviteConfigured: Boolean(env.BETA_INVITE_URL),
       });
     }
 
@@ -682,11 +1094,12 @@ export default {
       return handleBetaAccess(request, env);
     }
 
+    if (url.pathname.startsWith("/admin/api/")) {
+      return handleAdminApi(request, env, url);
+    }
+
     if (url.pathname.startsWith("/api/")) {
-      return jsonResponse(
-        { success: false, message: "API route not found." },
-        404,
-      );
+      return jsonResponse({ success: false, message: "API route not found." }, 404);
     }
 
     return env.ASSETS.fetch(request);
