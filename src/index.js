@@ -4,7 +4,7 @@ const ALLOWED_HOSTNAMES = new Set([
   "intelligentdecisions.io",
   "www.intelligentdecisions.io",
 ]);
-const ADMIN_EMAIL = "bhall@intelligentdecisions.io";
+const BETA_NOTIFICATION_TO = "bhall@intelligentdecisions.io";
 const ALLOWED_PLATFORMS = new Set([
   "Uber Eats",
   "DoorDash",
@@ -32,7 +32,6 @@ const TURNSTILE_ENDPOINT =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const BETA_FROM_EMAIL =
   "CourierIQ Beta <beta@intelligentdecisions.io>";
-const BETA_NOTIFICATION_TO = ADMIN_EMAIL;
 const ADMIN_REQUEST_SELECT = [
   "id",
   "first_name",
@@ -107,7 +106,11 @@ function getAccessEmail(request) {
 
 function requireAdmin(request) {
   const email = getAccessEmail(request);
-  if (!email || email !== ADMIN_EMAIL) {
+
+  // Cloudflare Access owns the administrator allowlist for /admin/*.
+  // Any authenticated email that reaches this Worker has already passed
+  // the Access policy, so do not duplicate that allowlist in application code.
+  if (!email) {
     return {
       response: jsonResponse(
         { success: false, message: "Administrator access is required." },
@@ -115,6 +118,7 @@ function requireAdmin(request) {
       ),
     };
   }
+
   return { email };
 }
 
