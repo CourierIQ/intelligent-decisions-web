@@ -245,7 +245,7 @@
             </label>
 
             <label class="beta-field">
-              <span>Email <strong aria-hidden="true">*</strong></span>
+              <span>Contact email <strong aria-hidden="true">*</strong></span>
               <input
                 id="beta-email"
                 name="email"
@@ -254,6 +254,22 @@
                 maxlength="254"
                 required
               />
+            </label>
+
+            <label class="beta-field beta-field-wide">
+              <span>Google Play account email <strong aria-hidden="true">*</strong></span>
+              <input
+                id="beta-google-play-email"
+                name="google_play_email"
+                type="email"
+                autocomplete="email"
+                maxlength="254"
+                aria-describedby="beta-google-play-help"
+                required
+              />
+              <small id="beta-google-play-help">
+                Use the Google account signed in to Google Play on your Android device. It can match your contact email.
+              </small>
             </label>
 
             <label class="beta-field">
@@ -329,7 +345,8 @@
             <input id="beta-consent" name="consent" type="checkbox" required />
             <span>
               I agree that Intelligent Decisions Interactive may contact me
-              regarding CourierIQ private beta access.
+              regarding CourierIQ private beta access and use my Google Play
+              account email to manage tester eligibility.
             </span>
           </label>
 

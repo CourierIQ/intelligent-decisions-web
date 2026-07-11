@@ -36,6 +36,7 @@ const ADMIN_REQUEST_SELECT = [
   "id",
   "first_name",
   "email",
+  "google_play_email",
   "state",
   "android_device",
   "delivery_platforms",
@@ -125,6 +126,10 @@ function requireAdmin(request) {
 function validateSubmission(payload) {
   const firstName = cleanString(payload.first_name, 80);
   const email = cleanString(payload.email, 254).toLowerCase();
+  const googlePlayEmail = cleanString(
+    payload.google_play_email,
+    254,
+  ).toLowerCase();
   const state = cleanString(payload.state, 80);
   const androidDevice = cleanString(payload.android_device, 120);
   const weeklyDeliveries = cleanString(payload.weekly_deliveries, 20);
@@ -143,7 +148,10 @@ function validateSubmission(payload) {
 
   if (website) return { honeypot: true };
   if (firstName.length < 1) return { error: "Enter your first name." };
-  if (!isValidEmail(email)) return { error: "Enter a valid email address." };
+  if (!isValidEmail(email)) return { error: "Enter a valid contact email address." };
+  if (!isValidEmail(googlePlayEmail)) {
+    return { error: "Enter a valid Google Play account email." };
+  }
   if (state && state.length < 2) return { error: "Enter a valid state." };
   if (androidDevice.length < 2) {
     return { error: "Enter the Android device you use." };
@@ -165,6 +173,7 @@ function validateSubmission(payload) {
     data: {
       firstName,
       email,
+      googlePlayEmail,
       state: state || null,
       androidDevice,
       deliveryPlatforms,
@@ -287,6 +296,7 @@ async function upsertApplication(application, env) {
         {
           first_name: application.firstName,
           email: application.email,
+          google_play_email: application.googlePlayEmail,
           state: application.state,
           android_device: application.androidDevice,
           delivery_platforms: application.deliveryPlatforms,
@@ -453,7 +463,8 @@ function buildAdminEmail(application) {
     html: `
       <h1>New CourierIQ beta request</h1>
       <p><strong>Applicant:</strong> ${escapeHtml(application.firstName)}</p>
-      <p><strong>Email:</strong> ${escapeHtml(application.email)}</p>
+      <p><strong>Contact email:</strong> ${escapeHtml(application.email)}</p>
+      <p><strong>Google Play email:</strong> ${escapeHtml(application.googlePlayEmail)}</p>
       <p><strong>State:</strong> ${escapeHtml(state)}</p>
       <p><strong>Android device:</strong> ${escapeHtml(application.androidDevice)}</p>
       <p><strong>Platforms:</strong> ${escapeHtml(platforms)}</p>
@@ -465,7 +476,8 @@ function buildAdminEmail(application) {
       "New CourierIQ beta request",
       "",
       `Applicant: ${application.firstName}`,
-      `Email: ${application.email}`,
+      `Contact email: ${application.email}`,
+      `Google Play email: ${application.googlePlayEmail}`,
       `State: ${state}`,
       `Android device: ${application.androidDevice}`,
       `Platforms: ${platforms}`,
@@ -490,6 +502,7 @@ function buildApplicantEmail(application) {
       <h1>We received your request.</h1>
       <p>Hi ${escapeHtml(application.firstName)},</p>
       <p>Thanks for requesting access to the CourierIQ private beta.</p>
+      <p>We recorded <strong>${escapeHtml(application.googlePlayEmail)}</strong> as the Google Play account for tester eligibility.</p>
       <p>We have received your information and will review it as beta capacity becomes available. Submitting a request does not guarantee immediate access.</p>
       <p>— Intelligent Decisions Interactive<br>Clarity over Complexity.</p>
     `,
@@ -497,6 +510,8 @@ function buildApplicantEmail(application) {
       `Hi ${application.firstName},`,
       "",
       "Thanks for requesting access to the CourierIQ private beta.",
+      "",
+      `Google Play account for tester eligibility: ${application.googlePlayEmail}`,
       "",
       "We have received your information and will review it as beta capacity becomes available. Submitting a request does not guarantee immediate access.",
       "",
@@ -510,6 +525,7 @@ function buildStoredAdminEmail(application) {
   return buildAdminEmail({
     firstName: application.first_name,
     email: application.email,
+    googlePlayEmail: application.google_play_email,
     state: application.state,
     androidDevice: application.android_device,
     deliveryPlatforms: application.delivery_platforms || [],
@@ -522,6 +538,7 @@ function buildStoredApplicantEmail(application) {
   return buildApplicantEmail({
     firstName: application.first_name,
     email: application.email,
+    googlePlayEmail: application.google_play_email,
   });
 }
 
@@ -539,8 +556,10 @@ function buildInviteEmail(application, inviteUrl) {
       <h1>Welcome to the CourierIQ private beta.</h1>
       <p>Hi ${escapeHtml(application.first_name)},</p>
       <p>Your CourierIQ private beta request has been approved.</p>
+      <p>Your authorized Google Play account is <strong>${escapeHtml(application.google_play_email)}</strong>.</p>
+      <p>Open the invitation while signed in to that Google account:</p>
       <p><a href="${escapeHtml(inviteUrl)}">Open your beta invitation</a></p>
-      <p>This invitation is intended for you. Please do not redistribute the download or access link.</p>
+      <p>This invitation is intended for you. Please do not redistribute the access link.</p>
       <p>— Intelligent Decisions Interactive<br>Clarity over Complexity.</p>
     `,
     text: [
@@ -548,9 +567,12 @@ function buildInviteEmail(application, inviteUrl) {
       "",
       "Your CourierIQ private beta request has been approved.",
       "",
+      `Authorized Google Play account: ${application.google_play_email}`,
+      "Open the invitation while signed in to that Google account.",
+      "",
       `Open your beta invitation: ${inviteUrl}`,
       "",
-      "This invitation is intended for you. Please do not redistribute the download or access link.",
+      "This invitation is intended for you. Please do not redistribute the access link.",
       "",
       "— Intelligent Decisions Interactive",
       "Clarity over Complexity.",
@@ -974,6 +996,15 @@ async function handleAdminInvite(request, env, actorEmail, applicationId) {
   if (!["approved", "invited"].includes(application.status)) {
     return jsonResponse(
       { success: false, message: "Approve the applicant before sending an invitation." },
+      409,
+    );
+  }
+  if (!isValidEmail(application.google_play_email || "")) {
+    return jsonResponse(
+      {
+        success: false,
+        message: "A valid Google Play account email is required before inviting this applicant.",
+      },
       409,
     );
   }

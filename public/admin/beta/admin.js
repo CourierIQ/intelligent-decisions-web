@@ -27,6 +27,7 @@ const elements = {
   profileDetails: document.querySelector("#profileDetails"),
   emailDetails: document.querySelector("#emailDetails"),
   interestReason: document.querySelector("#interestReason"),
+  copyPlayEmail: document.querySelector("#copyPlayEmail"),
   retryAdminEmail: document.querySelector("#retryAdminEmail"),
   retryApplicantEmail: document.querySelector("#retryApplicantEmail"),
   reviewForm: document.querySelector("#reviewForm"),
@@ -130,6 +131,7 @@ function filteredApplications() {
     const haystack = [
       application.first_name,
       application.email,
+      application.google_play_email,
       application.android_device,
       application.state,
       ...(application.delivery_platforms || []),
@@ -237,6 +239,10 @@ function renderDetail() {
 
   elements.profileDetails.innerHTML = [
     detailRow("State", escapeHtml(application.state || "Not provided")),
+    detailRow(
+      "Google Play email",
+      escapeHtml(application.google_play_email || application.email || "Not provided"),
+    ),
     detailRow("Android device", escapeHtml(application.android_device || "Not provided")),
     detailRow("Platforms", escapeHtml((application.delivery_platforms || []).join(", ") || "Not provided")),
     detailRow("Deliveries", escapeHtml(`${application.weekly_deliveries || "Unknown"} per week`)),
@@ -257,14 +263,18 @@ function renderDetail() {
   elements.adminNotes.value = application.admin_notes || "";
   elements.notesCount.textContent = String(elements.adminNotes.value.length);
 
+  elements.copyPlayEmail.disabled = !(
+    application.google_play_email || application.email
+  );
   elements.retryAdminEmail.disabled = application.admin_email_status !== "failed";
   elements.retryApplicantEmail.disabled = application.applicant_email_status !== "failed";
   elements.sendInviteButton.disabled =
     !state.inviteEnabled || !["approved", "invited"].includes(application.status);
+  const playEmail = application.google_play_email || application.email;
   elements.inviteHelp.textContent = !state.inviteEnabled
     ? "Add BETA_INVITE_URL in Cloudflare when distribution is ready."
     : application.status === "approved" || application.status === "invited"
-      ? "Ready to send the configured invitation."
+      ? `Add ${playEmail} to the Google Play tester list, then send the invitation.`
       : "Approve the applicant before sending an invitation.";
 
   renderHistory();
@@ -359,6 +369,33 @@ async function saveReview(event) {
   }
 }
 
+async function copyGooglePlayEmail() {
+  const playEmail =
+    state.selected?.google_play_email || state.selected?.email || "";
+  if (!playEmail) return;
+
+  try {
+    await navigator.clipboard.writeText(playEmail);
+    setDetailMessage("Google Play email copied.", "success");
+  } catch {
+    const temporaryInput = document.createElement("textarea");
+    temporaryInput.value = playEmail;
+    temporaryInput.setAttribute("readonly", "");
+    temporaryInput.style.position = "fixed";
+    temporaryInput.style.opacity = "0";
+    document.body.appendChild(temporaryInput);
+    temporaryInput.select();
+    const copied = document.execCommand("copy");
+    temporaryInput.remove();
+    setDetailMessage(
+      copied
+        ? "Google Play email copied."
+        : "Google Play email could not be copied.",
+      copied ? "success" : "error",
+    );
+  }
+}
+
 async function retryEmail(type) {
   if (!state.selectedId) return;
   const button = type === "admin" ? elements.retryAdminEmail : elements.retryApplicantEmail;
@@ -415,6 +452,7 @@ elements.reviewForm.addEventListener("submit", saveReview);
 elements.adminNotes.addEventListener("input", () => {
   elements.notesCount.textContent = String(elements.adminNotes.value.length);
 });
+elements.copyPlayEmail.addEventListener("click", copyGooglePlayEmail);
 elements.retryAdminEmail.addEventListener("click", () => retryEmail("admin"));
 elements.retryApplicantEmail.addEventListener("click", () => retryEmail("applicant"));
 elements.sendInviteButton.addEventListener("click", sendInvite);

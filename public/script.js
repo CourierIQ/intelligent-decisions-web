@@ -39,6 +39,10 @@ if (betaModal) {
   ];
   const interestInput = betaModal.querySelector("#beta-interest");
   const interestCount = betaModal.querySelector("[data-interest-count]");
+  const contactEmailInput = betaModal.querySelector("#beta-email");
+  const googlePlayEmailInput = betaModal.querySelector(
+    "#beta-google-play-email",
+  );
   const openButtons = [...document.querySelectorAll("[data-beta-access-open]")];
   const closeButtons = [...betaModal.querySelectorAll("[data-beta-access-close]")];
 
@@ -47,6 +51,7 @@ if (betaModal) {
   let turnstileToken = "";
   let turnstileRenderTimer = null;
   let turnstileRenderAttempts = 0;
+  let googlePlayEmailEdited = false;
 
   const focusableSelector = [
     "button:not([disabled])",
@@ -135,6 +140,7 @@ if (betaModal) {
 
   function resetModalState() {
     betaForm.reset();
+    googlePlayEmailEdited = false;
     betaForm.hidden = false;
     betaFormView.hidden = false;
     betaSuccess.hidden = true;
@@ -226,9 +232,25 @@ if (betaModal) {
     interestCount.textContent = String(interestInput.value.length);
   });
 
+  contactEmailInput.addEventListener("input", () => {
+    if (!googlePlayEmailEdited) {
+      googlePlayEmailInput.value = contactEmailInput.value;
+    }
+  });
+
+  googlePlayEmailInput.addEventListener("input", () => {
+    googlePlayEmailEdited =
+      googlePlayEmailInput.value.trim().toLowerCase() !==
+      contactEmailInput.value.trim().toLowerCase();
+  });
+
   betaForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     setStatus();
+
+    if (!googlePlayEmailInput.value.trim()) {
+      googlePlayEmailInput.value = contactEmailInput.value;
+    }
 
     const platformsValid = validatePlatforms(true);
 
@@ -246,6 +268,7 @@ if (betaModal) {
     const payload = {
       first_name: formData.get("first_name"),
       email: formData.get("email"),
+      google_play_email: formData.get("google_play_email"),
       state: formData.get("state"),
       android_device: formData.get("android_device"),
       delivery_platforms: formData.getAll("delivery_platforms"),
