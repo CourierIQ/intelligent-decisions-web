@@ -127,17 +127,79 @@
         </button>
       </div>
 
-      <div class="courieriq-preview">
-        <div class="phone-frame">
-          <div class="phone-speaker" aria-hidden="true"></div>
+      <div class="courieriq-preview" data-courieriq-gallery>
+        <div class="preview-carousel">
+          <button
+            type="button"
+            class="preview-control preview-control-previous"
+            aria-label="Show previous CourierIQ screenshot"
+            data-gallery-previous
+          >
+            <span aria-hidden="true">←</span>
+          </button>
 
-          <img
-            src="images/courieriq-scan-offer.webp"
-            alt="CourierIQ offer analysis showing a quest-adjusted IQ score and overlay access"
-          />
+          <div
+            class="preview-viewport"
+            tabindex="0"
+            aria-label="CourierIQ feature screenshots"
+            data-gallery-viewport
+          >
+            <article class="preview-slide" data-gallery-slide>
+              <div class="phone-frame">
+                <div class="phone-speaker" aria-hidden="true"></div>
+
+                <img
+                  src="images/courieriq-inside-uber.webp"
+                  alt="CourierIQ overlay evaluating an offer directly inside the Uber Driver app"
+                />
+              </div>
+
+              <p class="preview-caption">
+                Evaluate offers without leaving the delivery app.
+              </p>
+            </article>
+
+            <article class="preview-slide" data-gallery-slide>
+              <div class="phone-frame">
+                <div class="phone-speaker" aria-hidden="true"></div>
+
+                <img
+                  src="images/courieriq-session-history.webp"
+                  alt="CourierIQ Session History showing weekly earnings, trips, mileage, and True IQ"
+                />
+              </div>
+
+              <p class="preview-caption">
+                Review weekly and daily performance in Session History.
+              </p>
+            </article>
+          </div>
+
+          <button
+            type="button"
+            class="preview-control preview-control-next"
+            aria-label="Show next CourierIQ screenshot"
+            data-gallery-next
+          >
+            <span aria-hidden="true">→</span>
+          </button>
         </div>
 
-        <p class="preview-caption">Clear offer analysis in seconds.</p>
+        <div class="preview-dots" aria-label="Choose CourierIQ screenshot">
+          <button
+            type="button"
+            class="preview-dot is-active"
+            aria-label="Show screenshot 1 of 2"
+            aria-current="true"
+            data-gallery-dot="0"
+          ></button>
+          <button
+            type="button"
+            class="preview-dot"
+            aria-label="Show screenshot 2 of 2"
+            data-gallery-dot="1"
+          ></button>
+        </div>
       </div>
     </section>
 

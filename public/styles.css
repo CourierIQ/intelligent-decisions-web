@@ -443,6 +443,117 @@ h2 {
   text-align: center;
 }
 
+.preview-carousel {
+  position: relative;
+  width: 100%;
+}
+
+.preview-viewport {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.preview-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.preview-viewport:focus-visible {
+  border-radius: 48px;
+  outline: 2px solid var(--gold);
+  outline-offset: 6px;
+}
+
+.preview-slide {
+  display: flex;
+  min-width: 100%;
+  flex: 0 0 100%;
+  flex-direction: column;
+  align-items: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.preview-control {
+  position: absolute;
+  top: min(42%, 330px);
+  z-index: 5;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 50%;
+  background: rgba(3, 9, 15, 0.86);
+  color: var(--gold);
+  font: inherit;
+  font-size: 1.35rem;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.preview-control:hover,
+.preview-control:focus-visible {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--navy-deep);
+}
+
+.preview-control:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.preview-control:disabled:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(3, 9, 15, 0.86);
+  color: var(--gold);
+}
+
+.preview-control-previous {
+  left: -22px;
+}
+
+.preview-control-next {
+  right: -22px;
+}
+
+.preview-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.preview-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition:
+    width 160ms ease,
+    background 160ms ease;
+}
+
+.preview-dot.is-active {
+  width: 28px;
+  background: var(--gold);
+}
+
 /* Product ecosystem */
 
 .ecosystem {
@@ -696,6 +807,14 @@ footer {
     height: auto;
     margin-top: 10px;
     padding-top: 0;
+  }
+
+  .preview-control {
+    display: none;
+  }
+
+  .preview-viewport {
+    scroll-padding-inline: 0;
   }
 
   .phone-frame {

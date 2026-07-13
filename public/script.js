@@ -317,3 +317,98 @@ if (betaModal) {
     }
   });
 }
+
+const courierIqGallery = document.querySelector("[data-courieriq-gallery]");
+
+if (courierIqGallery) {
+  const viewport = courierIqGallery.querySelector("[data-gallery-viewport]");
+  const slides = [...courierIqGallery.querySelectorAll("[data-gallery-slide]")];
+  const dots = [...courierIqGallery.querySelectorAll("[data-gallery-dot]")];
+  const previousButton = courierIqGallery.querySelector("[data-gallery-previous]");
+  const nextButton = courierIqGallery.querySelector("[data-gallery-next]");
+  let activeIndex = 0;
+  let scrollFrame = null;
+
+  function setActiveSlide(index, moveViewport = false) {
+    const nextIndex = Math.max(0, Math.min(index, slides.length - 1));
+    activeIndex = nextIndex;
+
+    dots.forEach((dot, dotIndex) => {
+      const isActive = dotIndex === activeIndex;
+      dot.classList.toggle("is-active", isActive);
+      if (isActive) {
+        dot.setAttribute("aria-current", "true");
+      } else {
+        dot.removeAttribute("aria-current");
+      }
+    });
+
+    previousButton.disabled = activeIndex === 0;
+    nextButton.disabled = activeIndex === slides.length - 1;
+
+    if (moveViewport) {
+      viewport.scrollTo({
+        left: slides[activeIndex].offsetLeft,
+        behavior: "smooth",
+      });
+    }
+  }
+
+  function updateFromScroll() {
+    scrollFrame = null;
+    const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    slides.forEach((slide, index) => {
+      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+      const distance = Math.abs(viewportCenter - slideCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    if (closestIndex !== activeIndex) {
+      setActiveSlide(closestIndex);
+    }
+  }
+
+  previousButton.addEventListener("click", () => {
+    setActiveSlide(activeIndex - 1, true);
+  });
+
+  nextButton.addEventListener("click", () => {
+    setActiveSlide(activeIndex + 1, true);
+  });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      setActiveSlide(index, true);
+    });
+  });
+
+  viewport.addEventListener("scroll", () => {
+    if (scrollFrame !== null) {
+      cancelAnimationFrame(scrollFrame);
+    }
+    scrollFrame = requestAnimationFrame(updateFromScroll);
+  }, { passive: true });
+
+  viewport.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      setActiveSlide(activeIndex - 1, true);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      setActiveSlide(activeIndex + 1, true);
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    viewport.scrollLeft = slides[activeIndex].offsetLeft;
+  });
+
+  setActiveSlide(0);
+}
+
