@@ -318,14 +318,19 @@ if (betaModal) {
   });
 }
 
-const courierIqGallery = document.querySelector("[data-courieriq-gallery]");
+const courierIqShowcase = document.querySelector("[data-courieriq-showcase]");
 
-if (courierIqGallery) {
-  const viewport = courierIqGallery.querySelector("[data-gallery-viewport]");
-  const slides = [...courierIqGallery.querySelectorAll("[data-gallery-slide]")];
-  const dots = [...courierIqGallery.querySelectorAll("[data-gallery-dot]")];
-  const previousButton = courierIqGallery.querySelector("[data-gallery-previous]");
-  const nextButton = courierIqGallery.querySelector("[data-gallery-next]");
+if (courierIqShowcase) {
+  const viewport = courierIqShowcase.querySelector("[data-showcase-viewport]");
+  const slides = [
+    ...courierIqShowcase.querySelectorAll("[data-showcase-slide]"),
+  ];
+  const dots = [...courierIqShowcase.querySelectorAll("[data-showcase-dot]")];
+  const previousButton = courierIqShowcase.querySelector(
+    "[data-showcase-previous]",
+  );
+  const nextButton = courierIqShowcase.querySelector("[data-showcase-next]");
+
   let activeIndex = 0;
   let scrollFrame = null;
 
@@ -333,9 +338,16 @@ if (courierIqGallery) {
     const nextIndex = Math.max(0, Math.min(index, slides.length - 1));
     activeIndex = nextIndex;
 
+    slides.forEach((slide, slideIndex) => {
+      const isActive = slideIndex === activeIndex;
+      slide.toggleAttribute("inert", !isActive);
+      slide.setAttribute("aria-hidden", String(!isActive));
+    });
+
     dots.forEach((dot, dotIndex) => {
       const isActive = dotIndex === activeIndex;
       dot.classList.toggle("is-active", isActive);
+
       if (isActive) {
         dot.setAttribute("aria-current", "true");
       } else {
@@ -356,6 +368,7 @@ if (courierIqGallery) {
 
   function updateFromScroll() {
     scrollFrame = null;
+
     const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
     let closestIndex = 0;
     let closestDistance = Number.POSITIVE_INFINITY;
@@ -363,6 +376,7 @@ if (courierIqGallery) {
     slides.forEach((slide, index) => {
       const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
       const distance = Math.abs(viewportCenter - slideCenter);
+
       if (distance < closestDistance) {
         closestDistance = distance;
         closestIndex = index;
@@ -388,12 +402,17 @@ if (courierIqGallery) {
     });
   });
 
-  viewport.addEventListener("scroll", () => {
-    if (scrollFrame !== null) {
-      cancelAnimationFrame(scrollFrame);
-    }
-    scrollFrame = requestAnimationFrame(updateFromScroll);
-  }, { passive: true });
+  viewport.addEventListener(
+    "scroll",
+    () => {
+      if (scrollFrame !== null) {
+        cancelAnimationFrame(scrollFrame);
+      }
+
+      scrollFrame = requestAnimationFrame(updateFromScroll);
+    },
+    { passive: true },
+  );
 
   viewport.addEventListener("keydown", (event) => {
     if (event.key === "ArrowLeft") {
@@ -411,4 +430,3 @@ if (courierIqGallery) {
 
   setActiveSlide(0);
 }
-

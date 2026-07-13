@@ -79,127 +79,297 @@
       </div>
     </section>
 
-    <section id="courieriq" class="products">
-      <div class="product-heading">
-        <p class="eyebrow">Flagship Product</p>
-        <h2>CourierIQ</h2>
-      </div>
+    <section
+      id="courieriq"
+      class="products"
+      data-courieriq-showcase
+      aria-label="CourierIQ product features"
+    >
+      <div class="showcase-shell">
+        <button
+          type="button"
+          class="showcase-control showcase-control-previous"
+          aria-label="Show previous CourierIQ feature"
+          data-showcase-previous
+        >
+          <span aria-hidden="true">←</span>
+        </button>
 
-      <div class="product-copy">
-        <p class="product-lead">
-          Decision intelligence built for delivery drivers.
-        </p>
+        <div
+          class="showcase-viewport"
+          tabindex="0"
+          aria-label="CourierIQ feature showcase"
+          data-showcase-viewport
+        >
+          <article
+            class="showcase-slide"
+            aria-label="Feature 1 of 3: Offer Analysis"
+            data-showcase-slide
+          >
+            <div class="showcase-slide-inner">
+              <div class="product-heading">
+                <p class="eyebrow">Flagship Product</p>
+                <h2>CourierIQ</h2>
+              </div>
 
-        <p class="description">
-          CourierIQ evaluates delivery offers, tracks active trips, and turns
-          earnings data into clear, actionable information—so drivers can make
-          better decisions without slowing down.
-        </p>
+              <div class="product-copy">
+                <p class="product-lead">
+                  Decision intelligence built for delivery drivers.
+                </p>
 
-        <div class="feature-list">
-          <article class="feature-card">
-            <strong>Offer Analysis</strong>
-            <span>Evaluate pay, mileage, time, and overall offer quality.</span>
+                <p class="description">
+                  CourierIQ evaluates delivery offers, tracks active trips, and
+                  turns earnings data into clear, actionable information—so
+                  drivers can make better decisions without slowing down.
+                </p>
+
+                <div class="feature-list">
+                  <article class="feature-card">
+                    <strong>Offer Analysis</strong>
+                    <span>
+                      Evaluate pay, mileage, time, and overall offer quality.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Trip Tracking</strong>
+                    <span>
+                      Track active deliveries through a streamlined workflow.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Performance Insight</strong>
+                    <span>
+                      Understand hourly earnings, mileage efficiency, and trends.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Clear Recommendations</strong>
+                    <span>
+                      See an immediate IQ score and an actionable result.
+                    </span>
+                  </article>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn primary beta-access-trigger"
+                  data-beta-access-open
+                >
+                  Request Beta Access
+                </button>
+              </div>
+
+              <div class="courieriq-preview">
+                <div class="phone-frame">
+                  <div class="phone-speaker" aria-hidden="true"></div>
+
+                  <img
+                    src="images/courieriq-scan-offer.webp"
+                    alt="CourierIQ offer analysis screen showing an IQ score and recommendation"
+                  />
+                </div>
+
+                <p class="preview-caption">
+                  Turn offer details into a clear decision before accepting.
+                </p>
+              </div>
+            </div>
           </article>
 
-          <article class="feature-card">
-            <strong>Trip Tracking</strong>
-            <span>Track active deliveries through a streamlined workflow.</span>
+          <article
+            class="showcase-slide"
+            aria-label="Feature 2 of 3: Inside Uber App"
+            aria-hidden="true"
+            inert
+            data-showcase-slide
+          >
+            <div class="showcase-slide-inner">
+              <div class="product-heading">
+                <p class="eyebrow">Flagship Product · Inside Uber App</p>
+                <h2>CourierIQ</h2>
+              </div>
+
+              <div class="product-copy">
+                <p class="product-lead">
+                  Offer intelligence where the decision happens.
+                </p>
+
+                <p class="description">
+                  CourierIQ evaluates the offer directly above the delivery app,
+                  applying active bonuses and translating pay, mileage, and time
+                  into an immediate decision signal.
+                </p>
+
+                <div class="feature-list">
+                  <article class="feature-card">
+                    <strong>In-App Overlay</strong>
+                    <span>
+                      Evaluate the active offer without leaving the delivery app.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Quest-Aware Earnings</strong>
+                    <span>
+                      Include active bonuses before judging the offer’s real value.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Immediate Decision Signal</strong>
+                    <span>
+                      See the IQ score and actionable recommendation at a glance.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>One-Tap Trip Capture</strong>
+                    <span>
+                      Send accepted offers directly into the active trip workflow.
+                    </span>
+                  </article>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn primary beta-access-trigger"
+                  data-beta-access-open
+                >
+                  Request Beta Access
+                </button>
+              </div>
+
+              <div class="courieriq-preview">
+                <div class="phone-frame">
+                  <div class="phone-speaker" aria-hidden="true"></div>
+
+                  <img
+                    src="images/courieriq-inside-uber.webp"
+                    alt="CourierIQ overlay evaluating an offer directly inside the Uber Driver app"
+                  />
+                </div>
+
+                <p class="preview-caption">
+                  Evaluate offers without leaving the delivery app.
+                </p>
+              </div>
+            </div>
           </article>
 
-          <article class="feature-card">
-            <strong>Performance Insight</strong>
-            <span>Understand hourly earnings, mileage efficiency, and trends.</span>
-          </article>
+          <article
+            class="showcase-slide"
+            aria-label="Feature 3 of 3: Session History"
+            aria-hidden="true"
+            inert
+            data-showcase-slide
+          >
+            <div class="showcase-slide-inner">
+              <div class="product-heading">
+                <p class="eyebrow">Flagship Product · Session History</p>
+                <h2>CourierIQ</h2>
+              </div>
 
-          <article class="feature-card">
-            <strong>Clear Recommendations</strong>
-            <span>See an immediate IQ score and an actionable result.</span>
+              <div class="product-copy">
+                <p class="product-lead">
+                  Turn completed sessions into usable insight.
+                </p>
+
+                <p class="description">
+                  Session History organizes performance by week and day, showing
+                  the earnings, mileage, time, and True IQ behind every working
+                  period—not just the final payout.
+                </p>
+
+                <div class="feature-list">
+                  <article class="feature-card">
+                    <strong>Weekly Performance</strong>
+                    <span>
+                      Review earnings, trips, online time, mileage, and True IQ.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Daily Drilldown</strong>
+                    <span>
+                      Select a day to inspect the results behind the weekly totals.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>Mileage Efficiency</strong>
+                    <span>
+                      Compare total distance, pickup mileage, hourly, and per-mile returns.
+                    </span>
+                  </article>
+
+                  <article class="feature-card">
+                    <strong>True IQ Trends</strong>
+                    <span>
+                      Track decision quality across changing workloads and timeframes.
+                    </span>
+                  </article>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn primary beta-access-trigger"
+                  data-beta-access-open
+                >
+                  Request Beta Access
+                </button>
+              </div>
+
+              <div class="courieriq-preview">
+                <div class="phone-frame">
+                  <div class="phone-speaker" aria-hidden="true"></div>
+
+                  <img
+                    src="images/courieriq-session-history.webp"
+                    alt="CourierIQ Session History showing weekly earnings, trips, mileage, pickup mileage, and True IQ"
+                  />
+                </div>
+
+                <p class="preview-caption">
+                  Review weekly and daily performance in Session History.
+                </p>
+              </div>
+            </div>
           </article>
         </div>
 
         <button
           type="button"
-          class="btn primary beta-access-trigger"
-          data-beta-access-open
+          class="showcase-control showcase-control-next"
+          aria-label="Show next CourierIQ feature"
+          data-showcase-next
         >
-          Request Beta Access
+          <span aria-hidden="true">→</span>
         </button>
       </div>
 
-      <div class="courieriq-preview" data-courieriq-gallery>
-        <div class="preview-carousel">
-          <button
-            type="button"
-            class="preview-control preview-control-previous"
-            aria-label="Show previous CourierIQ screenshot"
-            data-gallery-previous
-          >
-            <span aria-hidden="true">←</span>
-          </button>
-
-          <div
-            class="preview-viewport"
-            tabindex="0"
-            aria-label="CourierIQ feature screenshots"
-            data-gallery-viewport
-          >
-            <article class="preview-slide" data-gallery-slide>
-              <div class="phone-frame">
-                <div class="phone-speaker" aria-hidden="true"></div>
-
-                <img
-                  src="images/courieriq-inside-uber.webp"
-                  alt="CourierIQ overlay evaluating an offer directly inside the Uber Driver app"
-                />
-              </div>
-
-              <p class="preview-caption">
-                Evaluate offers without leaving the delivery app.
-              </p>
-            </article>
-
-            <article class="preview-slide" data-gallery-slide>
-              <div class="phone-frame">
-                <div class="phone-speaker" aria-hidden="true"></div>
-
-                <img
-                  src="images/courieriq-session-history.webp"
-                  alt="CourierIQ Session History showing weekly earnings, trips, mileage, and True IQ"
-                />
-              </div>
-
-              <p class="preview-caption">
-                Review weekly and daily performance in Session History.
-              </p>
-            </article>
-          </div>
-
-          <button
-            type="button"
-            class="preview-control preview-control-next"
-            aria-label="Show next CourierIQ screenshot"
-            data-gallery-next
-          >
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
-
-        <div class="preview-dots" aria-label="Choose CourierIQ screenshot">
-          <button
-            type="button"
-            class="preview-dot is-active"
-            aria-label="Show screenshot 1 of 2"
-            aria-current="true"
-            data-gallery-dot="0"
-          ></button>
-          <button
-            type="button"
-            class="preview-dot"
-            aria-label="Show screenshot 2 of 2"
-            data-gallery-dot="1"
-          ></button>
-        </div>
+      <div class="showcase-dots" aria-label="Choose CourierIQ feature">
+        <button
+          type="button"
+          class="showcase-dot is-active"
+          aria-label="Show Offer Analysis feature"
+          aria-current="true"
+          data-showcase-dot="0"
+        ></button>
+        <button
+          type="button"
+          class="showcase-dot"
+          aria-label="Show Inside Uber App feature"
+          data-showcase-dot="1"
+        ></button>
+        <button
+          type="button"
+          class="showcase-dot"
+          aria-label="Show Session History feature"
+          data-showcase-dot="2"
+        ></button>
       </div>
     </section>
 
