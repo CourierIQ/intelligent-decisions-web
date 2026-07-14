@@ -1293,6 +1293,10 @@ body.beta-modal-open {
 
 
 /* Full CourierIQ feature showcase */
+.showcase-mobile-heading {
+  display: none;
+}
+
 .products {
   display: block;
   width: 100%;
@@ -1507,10 +1511,23 @@ body.beta-modal-open {
     width: 100%;
   }
 
+  .showcase-mobile-heading {
+    display: block;
+    padding: 0 24px;
+    margin-bottom: 34px;
+  }
+
+  .showcase-mobile-heading .eyebrow {
+    margin-bottom: 12px;
+  }
+
+  .showcase-mobile-heading h2 {
+    margin-bottom: 0;
+  }
+
   .showcase-slide-inner {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "heading"
       "preview"
       "copy";
     grid-template-rows: auto;
@@ -1518,7 +1535,10 @@ body.beta-modal-open {
     padding: 0 24px;
   }
 
-  .showcase-slide .product-heading,
+  .showcase-slide .product-heading {
+    display: none;
+  }
+
   .showcase-slide .product-copy,
   .showcase-slide .courieriq-preview {
     width: 100%;
@@ -1545,7 +1565,8 @@ body.beta-modal-open {
     padding: 16px 0 76px;
   }
 
+  .showcase-mobile-heading,
   .showcase-slide-inner {
-    padding: 0 20px;
+    padding-inline: 20px;
   }
 }
