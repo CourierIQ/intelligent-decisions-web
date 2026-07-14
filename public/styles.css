@@ -818,7 +818,7 @@ footer {
   }
 
   .phone-frame {
-    width: min(100%, 380px);
+    width: min(68vw, 280px);
     height: auto;
     min-height: 0;
     aspect-ratio: auto;
@@ -933,7 +933,7 @@ footer {
   }
 
   .phone-frame {
-    width: min(100%, 350px);
+    width: min(66vw, 250px);
     padding: 8px;
     border-radius: 40px;
   }
