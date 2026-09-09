@@ -1,6 +1,9 @@
 name = "intelligent-decisions-web"
 main = "src/index.js"
 compatibility_date = "2026-07-09"
+routes = [
+  { pattern = "intelligentdecisions.io", custom_domain = true }
+]
 
 [assets]
 directory = "./public"

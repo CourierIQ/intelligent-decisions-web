@@ -185,6 +185,11 @@ if (betaModal) {
     window.setTimeout(resetModalState, 180);
   }
 
+  if (new URLSearchParams(window.location.search).get("beta") === "1") {
+    openBetaModal();
+    window.history.replaceState(null, "", `${window.location.pathname}#courieriq`);
+  }
+
   openButtons.forEach((button) => {
     button.addEventListener("click", openBetaModal);
   });
