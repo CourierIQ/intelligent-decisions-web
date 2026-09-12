@@ -39,7 +39,8 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [x] Generate a dependency lockfile.
 - [x] Include the dependency lockfile in the reviewed web/application release baseline.
 - [x] Confirm the lockfile can recreate dependencies with npm ci, run the tests, and build all production bundles.
-- [ ] Reconcile Supabase migration version names. The previously missing production SQL has been reconstructed locally; fourteen production migrations have SQL-equivalent local counterparts, and two local migrations are not recorded remotely.
+- [x] Reconcile Supabase migration version names. All fourteen production migrations now have SQL-equivalent local files with the exact production versions.
+- [ ] Reconcile the pre-history beta schema migration and the forward release-hardening migration with remote migration history during the controlled database release.
 - [ ] Check in the initial CourierIQ and beta-intake schemas so a fresh environment can be recreated from the repository.
 - [ ] Add a staging deployment and require successful checks before production deployment.
 - [ ] Document deployment, environment configuration, rollback, and database-recovery procedures.
@@ -83,7 +84,8 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [ ] Monitor Supabase database health, authentication failures, storage failures, and backup/recovery readiness.
 - [ ] Monitor Stripe webhook failures and provide an operator replay procedure.
 - [ ] Add a release checklist with smoke tests and an explicit rollback decision point.
-- [ ] Add covering indexes for courieriq_offer_score_components.offer_id and user_id, the two current Supabase performance-advisor findings.
+- [x] Add covering indexes for courieriq_offer_score_components.offer_id and user_id to the generated forward release-hardening migration.
+- [ ] Apply the release-hardening migration in staging, then production, and confirm the performance advisor clears both findings.
 - [ ] Change homepage product badges so only verified products are labeled Live.
 
 ## Product launch gates
@@ -131,7 +133,8 @@ Release gate: one clean end-to-end free flow, one clean paid flow, published cus
 - [ ] Publish beta privacy, retention, deletion, support, and participation terms.
 - [ ] Check in the full database baseline needed to recreate CourierIQ and beta intake.
 - [ ] Document Android build, signing, Play distribution, versioning, rollback, and support ownership outside this web repository.
-- [ ] Add the two recommended foreign-key indexes for courieriq_offer_score_components after validating query plans.
+- [x] Stage the two recommended foreign-key indexes for courieriq_offer_score_components in the forward release-hardening migration.
+- [ ] Apply the indexes in staging, validate query plans and write latency, then promote them to production.
 
 Release gate: a new beta applicant can reach a working installed build without manual database intervention, and the team can support or roll back that build.
 
@@ -219,6 +222,7 @@ Never put secret values in this document.
 - [x] npm reported zero known dependency vulnerabilities on 2026-09-12.
 - [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
 - [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
+- [x] All fourteen tracked production migration versions were reconciled to byte-preserving local filenames, and a current CLI-generated hardening migration now records the existing Chargeback Studio Worker grants plus the two pending CourierIQ foreign-key indexes.
 - [ ] No complete browser-level authentication, payment, webhook, email, or AI journey has been verified yet.
 
 ## Universal definition of done
