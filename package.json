@@ -10,6 +10,7 @@
     "build:scopefence": "esbuild src/scopefence/entry.tsx --bundle --minify --format=esm --target=es2022 --jsx=automatic --outfile=public/projects/scopefence/scopefence.js",
     "build": "npm run build:chargeback-studio && npm run build:revenue-leak-finder && npm run build:bidlens && npm run build:scopefence",
     "test": "node --test tests/*.test.mjs",
+    "check": "npm run build && npm test && wrangler deploy --dry-run",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {

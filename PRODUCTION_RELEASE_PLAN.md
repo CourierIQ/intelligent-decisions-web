@@ -77,7 +77,8 @@ The order can change for business reasons, but no product bypasses the shared pr
 
 ### P1 — Quality and operations
 
-- [ ] Add CI checks for clean install, build, unit tests, type checking/linting, broken links, and missing static assets.
+- [x] Add CI checks for clean install, production builds, unit tests, generated-bundle drift, Worker dry runs, broken links, and missing static assets.
+- [ ] Add explicit linting and static type checking once the current JavaScript/TypeScript boundary is formalized.
 - [ ] Add desktop and mobile end-to-end tests for each product's primary user journey.
 - [ ] Add accessibility checks for authentication, upload, checkout, report, and export screens.
 - [ ] Configure Cloudflare error monitoring and alerts.
