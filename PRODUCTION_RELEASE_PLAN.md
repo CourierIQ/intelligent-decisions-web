@@ -213,7 +213,7 @@ Never put secret values in this document.
 
 ## Verification record
 
-- [x] Nineteen repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, and cross-product Stripe routing regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
+- [x] Twenty repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, and cross-product Stripe routing regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
 - [x] Main product pages and compiled product bundles returned HTTP 200.
 - [x] The CourierIQ admin API redirected unauthenticated access to Cloudflare Access.
 - [x] Product account APIs rejected unauthenticated requests.
@@ -223,6 +223,7 @@ Never put secret values in this document.
 - [x] Wrangler completed a production Worker and 49-asset dry run without deploying.
 - [x] npm reported zero known dependency vulnerabilities on 2026-09-12.
 - [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
+- [x] Sixteen repeatable Chromium smoke checks cover the homepage, ADBridge, CourierIQ, all four MVPs, and the legacy EvidenceLane redirect across desktop and mobile layouts.
 - [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
 - [x] All fourteen tracked production migration versions were reconciled to byte-preserving local filenames, and a current CLI-generated hardening migration now records the existing Chargeback Studio Worker grants plus the two pending CourierIQ foreign-key indexes.
 - [x] The reconstructed CourierIQ and beta-intake baseline matches production's 14 tables, 209 columns, 40 named constraints, and 32 existing indexes; it executed successfully with the RLS and hardening migrations in an isolated PostgreSQL-compatible runtime.

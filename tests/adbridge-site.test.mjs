@@ -100,6 +100,32 @@ test("the legacy EvidenceLane route permanently redirects to Chargeback Studio",
   assert.match(fallback, /href="\/projects\/chargeback-studio\/"/);
 });
 
+test("production requests enforce apex HTTPS while local Worker previews stay local", async () => {
+  const env = {
+    ASSETS: {
+      fetch(request) {
+        return new Response(new URL(request.url).pathname, {
+          headers: { "content-type": "text/plain" },
+        });
+      },
+    },
+  };
+
+  const local = await worker.fetch(new Request("http://127.0.0.1:4173/projects/adbridge/"), env);
+  assert.equal(local.status, 200);
+  assert.equal(await local.text(), "/projects/adbridge/");
+  assert.equal(local.headers.get("strict-transport-security"), null);
+  assert.match(local.headers.get("content-security-policy") || "", /default-src 'self'/);
+
+  const insecureProduction = await worker.fetch(new Request("http://intelligentdecisions.io/projects/adbridge/"), env);
+  assert.equal(insecureProduction.status, 308);
+  assert.equal(insecureProduction.headers.get("location"), "https://intelligentdecisions.io/projects/adbridge/");
+
+  const www = await worker.fetch(new Request("https://www.intelligentdecisions.io/projects/adbridge/"), env);
+  assert.equal(www.status, 308);
+  assert.equal(www.headers.get("location"), "https://intelligentdecisions.io/projects/adbridge/");
+});
+
 test("BidLens and ScopeFence use an existing site icon", async () => {
   for (const pagePath of ["projects/bidlens/index.html", "projects/scopefence/index.html"]) {
     const page = await readPublic(pagePath);

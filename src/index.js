@@ -2421,7 +2421,8 @@ function secureResponse(response, requestUrl) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.protocol !== "https:" || url.hostname === "www.intelligentdecisions.io") {
+    const isLoopback = ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname);
+    if ((!isLoopback && url.protocol !== "https:") || url.hostname === "www.intelligentdecisions.io") {
       url.protocol = "https:";
       url.hostname = "intelligentdecisions.io";
       return Response.redirect(url.toString(), 308);

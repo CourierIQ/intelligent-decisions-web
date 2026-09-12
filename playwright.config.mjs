@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || "https://127.0.0.1:4173";
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://127.0.0.1:4173";
 
 export default defineConfig({
   testDir: "./tests/browser",
@@ -11,7 +11,6 @@ export default defineConfig({
   reporter: "line",
   use: {
     baseURL,
-    ignoreHTTPSErrors: true,
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
@@ -28,7 +27,6 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_TEST_BASE_URL ? undefined : {
     command: "npm run preview:test",
     url: baseURL,
-    ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
     stdout: "ignore",
     stderr: "pipe",

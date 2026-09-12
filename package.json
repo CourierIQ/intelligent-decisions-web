@@ -9,7 +9,7 @@
     "build:bidlens": "esbuild src/bidlens/entry.tsx --bundle --minify --format=esm --target=es2022 --jsx=automatic --outfile=public/projects/bidlens/bidlens.js",
     "build:scopefence": "esbuild src/scopefence/entry.tsx --bundle --minify --format=esm --target=es2022 --jsx=automatic --outfile=public/projects/scopefence/scopefence.js",
     "build": "npm run build:chargeback-studio && npm run build:revenue-leak-finder && npm run build:bidlens && npm run build:scopefence",
-    "preview:test": "wrangler dev --local --local-protocol https --ip 127.0.0.1 --port 4173 --log-level warn",
+    "preview:test": "wrangler dev --local --local-upstream 127.0.0.1 --ip 127.0.0.1 --port 4173 --log-level warn",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "check": "npm run build && npm test && npm run test:browser && wrangler deploy --dry-run",

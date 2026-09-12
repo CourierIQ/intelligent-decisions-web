@@ -23,6 +23,15 @@ function isExpectedAnonymousApiResponse(url, status, baseURL) {
   return new URL(url).pathname.startsWith("/api/") && [401, 403].includes(status);
 }
 
+function isExpectedTurnstileTestNoise(message) {
+  try {
+    return new URL(message.location().url).hostname === "challenges.cloudflare.com" &&
+      /Failed to load resource: the server responded with a status of 400/i.test(message.text());
+  } catch {
+    return false;
+  }
+}
+
 for (const [name, path, title] of pages) {
   test(`${name} loads cleanly`, async ({ page, baseURL }) => {
     const browserErrors = [];
@@ -30,6 +39,7 @@ for (const [name, path, title] of pages) {
 
     page.on("console", (message) => {
       if (message.type() !== "error") return;
+      if (isExpectedTurnstileTestNoise(message)) return;
       const locationUrl = message.location().url;
       if (
         sameOrigin(locationUrl, baseURL) &&
