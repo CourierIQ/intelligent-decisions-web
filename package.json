@@ -9,8 +9,10 @@
     "build:bidlens": "esbuild src/bidlens/entry.tsx --bundle --minify --format=esm --target=es2022 --jsx=automatic --outfile=public/projects/bidlens/bidlens.js",
     "build:scopefence": "esbuild src/scopefence/entry.tsx --bundle --minify --format=esm --target=es2022 --jsx=automatic --outfile=public/projects/scopefence/scopefence.js",
     "build": "npm run build:chargeback-studio && npm run build:revenue-leak-finder && npm run build:bidlens && npm run build:scopefence",
+    "preview:test": "wrangler dev --local --local-protocol https --ip 127.0.0.1 --port 4173 --log-level warn",
     "test": "node --test tests/*.test.mjs",
-    "check": "npm run build && npm test && wrangler deploy --dry-run",
+    "test:browser": "playwright test",
+    "check": "npm run build && npm test && npm run test:browser && wrangler deploy --dry-run",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "esbuild": "0.28.1",
     "wrangler": "4.131.0"
   }

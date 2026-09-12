@@ -55,7 +55,7 @@ The order can change for business reasons, but no product bypasses the shared pr
   - Permit the Stripe-documented script, API, image, and frame origins only on the Chargeback Studio route.
   - Permit blob images only on the Chargeback Studio route for local evidence-file previews.
 - [x] Replace the missing /favicon.svg references in BidLens and ScopeFence with the existing site icon.
-- [ ] Add a repeatable automated browser smoke check that fails on CSP violations, missing assets, or console errors.
+- [x] Add a repeatable automated Chromium smoke check for desktop and mobile that fails on CSP violations, missing assets, console errors, page errors, or horizontal overflow.
 
 ### P0 — Security, privacy, and customer controls
 

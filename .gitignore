@@ -1,6 +1,8 @@
 # Dependencies and generated output
 node_modules/
 coverage/
+playwright-report/
+test-results/
 
 # Local Cloudflare/Wrangler state
 .wrangler/
