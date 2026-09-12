@@ -41,7 +41,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [x] Confirm the lockfile can recreate dependencies with npm ci, run the tests, and build all production bundles.
 - [x] Reconcile Supabase migration version names. All fourteen production migrations now have SQL-equivalent local files with the exact production versions.
 - [ ] Reconcile the pre-history beta schema migration and the forward release-hardening migration with remote migration history during the controlled database release.
-- [ ] Check in the initial CourierIQ and beta-intake schemas so a fresh environment can be recreated from the repository.
+- [x] Check in the initial CourierIQ and beta-intake schemas so a fresh environment can be recreated from the repository.
 - [ ] Add a staging deployment and require successful checks before production deployment.
 - [ ] Document deployment, environment configuration, rollback, and database-recovery procedures.
 
@@ -131,7 +131,7 @@ Release gate: one clean end-to-end free flow, one clean paid flow, published cus
 - [ ] Configure BETA_INVITE_URL.
 - [ ] Verify applicant submission, admin review, approval, invite email, Google Play access, install, first synchronization, and feedback intake.
 - [ ] Publish beta privacy, retention, deletion, support, and participation terms.
-- [ ] Check in the full database baseline needed to recreate CourierIQ and beta intake.
+- [x] Check in the full database baseline needed to recreate CourierIQ and beta intake.
 - [ ] Document Android build, signing, Play distribution, versioning, rollback, and support ownership outside this web repository.
 - [x] Stage the two recommended foreign-key indexes for courieriq_offer_score_components in the forward release-hardening migration.
 - [ ] Apply the indexes in staging, validate query plans and write latency, then promote them to production.
@@ -223,6 +223,7 @@ Never put secret values in this document.
 - [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
 - [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
 - [x] All fourteen tracked production migration versions were reconciled to byte-preserving local filenames, and a current CLI-generated hardening migration now records the existing Chargeback Studio Worker grants plus the two pending CourierIQ foreign-key indexes.
+- [x] The reconstructed CourierIQ and beta-intake baseline matches production's 14 tables, 209 columns, 40 named constraints, and 32 existing indexes; it executed successfully with the RLS and hardening migrations in an isolated PostgreSQL-compatible runtime.
 - [ ] No complete browser-level authentication, payment, webhook, email, or AI journey has been verified yet.
 
 ## Universal definition of done
