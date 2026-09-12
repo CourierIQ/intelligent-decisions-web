@@ -22,6 +22,11 @@ const auth = createProductAuth({
 });
 const CREDIT_PACK = Object.freeze({ sku: "analyses_20", credits: 20, priceCents: 2900, currency: "usd" });
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SCOPEFENCE_STRIPE_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+]);
 
 const RESPONSE_SCHEMA = {
   type: "object", additionalProperties: false,
@@ -152,13 +157,13 @@ async function handleAnalyze(request, env) {
 
 async function stripeCheckout(identity, idempotencyKey, request, env) {
   const secret = cleanString(env.STRIPE_SECRET_KEY, 8192); if (!/^sk_(test|live)_/.test(secret)) throw new Error("stripe_not_configured"); const origin = new URL(request.url).origin;
-  const params = new URLSearchParams({ mode: "payment", customer_email: identity.email, client_reference_id: identity.id, success_url: `${origin}/projects/scopefence/?payment=success`, cancel_url: `${origin}/projects/scopefence/?payment=cancelled`, billing_address_collection: "required", "automatic_tax[enabled]": "true", "payment_method_types[0]": "card", "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": CREDIT_PACK.currency, "line_items[0][price_data][unit_amount]": String(CREDIT_PACK.priceCents), "line_items[0][price_data][tax_behavior]": "inclusive", "line_items[0][price_data][product_data][name]": "ScopeFence — 20 analyses", "metadata[scopefence_flow]": "credit_pack_web_v1", "metadata[scopefence_user_id]": identity.id, "metadata[scopefence_email]": identity.email, "metadata[scopefence_sku]": CREDIT_PACK.sku, "metadata[scopefence_credits]": String(CREDIT_PACK.credits) });
+  const params = new URLSearchParams({ mode: "payment", customer_email: identity.email, client_reference_id: identity.id, success_url: `${origin}/projects/scopefence/?payment=success`, cancel_url: `${origin}/projects/scopefence/?payment=cancelled`, billing_address_collection: "required", "automatic_tax[enabled]": "true", "payment_method_types[0]": "card", "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": CREDIT_PACK.currency, "line_items[0][price_data][unit_amount]": String(CREDIT_PACK.priceCents), "line_items[0][price_data][tax_behavior]": "inclusive", "line_items[0][price_data][product_data][name]": "ScopeFence — 20 analyses", "metadata[scopefence_flow]": "credit_pack_web_v1", "metadata[scopefence_user_id]": identity.id, "metadata[scopefence_email]": identity.email, "metadata[scopefence_sku]": CREDIT_PACK.sku, "metadata[scopefence_credits]": String(CREDIT_PACK.credits), "payment_intent_data[metadata][scopefence_flow]": "credit_pack_web_v1", "payment_intent_data[metadata][scopefence_user_id]": identity.id, "payment_intent_data[metadata][scopefence_sku]": CREDIT_PACK.sku, "payment_intent_data[metadata][scopefence_credits]": String(CREDIT_PACK.credits) });
   const response = await fetchWithTimeout("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded", "Idempotency-Key": `scopefence:${identity.id}:${idempotencyKey}`, "Stripe-Version": "2025-06-30.basil" }, body: params.toString() }, 15000);
   const body = await response.json(); if (!response.ok || body?.object !== "checkout.session" || !String(body?.url || "").startsWith("https://checkout.stripe.com/")) throw new Error("scopefence_checkout_failed"); return body.url;
 }
 
 export function isScopeFenceStripeEvent(event) {
-  return event?.type === "checkout.session.completed" &&
+  return SCOPEFENCE_STRIPE_EVENTS.has(event?.type) &&
     event?.data?.object?.object === "checkout.session" &&
     event?.data?.object?.metadata?.scopefence_flow === "credit_pack_web_v1";
 }
@@ -166,8 +171,9 @@ export function isScopeFenceStripeEvent(event) {
 export async function fulfillScopeFenceStripeEvent(event, env) {
   if (!isScopeFenceStripeEvent(event)) return false;
   const session = event.data.object; const metadata = session.metadata || {};
+  if (event.type === "checkout.session.async_payment_failed" || session.payment_status !== "paid") return true;
   const userId = cleanString(metadata.scopefence_user_id, 80); const email = cleanString(metadata.scopefence_email, 320).toLowerCase(); const tax = Number(session.total_details?.amount_tax || 0);
-  if (session.mode !== "payment" || session.payment_status !== "paid" || !String(session.id || "").startsWith("cs_") || !String(session.payment_intent || "").startsWith("pi_") || session.client_reference_id !== userId || !UUID_PATTERN.test(userId) || !validEmail(email) || metadata.scopefence_sku !== CREDIT_PACK.sku || Number(metadata.scopefence_credits) !== CREDIT_PACK.credits || Number(session.amount_subtotal) !== CREDIT_PACK.priceCents || Number(session.amount_total) !== CREDIT_PACK.priceCents || tax < 0 || tax > CREDIT_PACK.priceCents || String(session.currency).toLowerCase() !== CREDIT_PACK.currency) throw new Error("invalid_scopefence_purchase");
+  if (session.mode !== "payment" || !String(session.id || "").startsWith("cs_") || !String(session.payment_intent || "").startsWith("pi_") || session.client_reference_id !== userId || !UUID_PATTERN.test(userId) || !validEmail(email) || metadata.scopefence_sku !== CREDIT_PACK.sku || Number(metadata.scopefence_credits) !== CREDIT_PACK.credits || Number(session.amount_subtotal) !== CREDIT_PACK.priceCents || Number(session.amount_total) !== CREDIT_PACK.priceCents || tax < 0 || tax > CREDIT_PACK.priceCents || String(session.currency).toLowerCase() !== CREDIT_PACK.currency) throw new Error("invalid_scopefence_purchase");
   await rpc("scopefence_fulfill_credit_purchase", { p_event_id: cleanString(event.id, 255), p_payment_intent_id: cleanString(session.payment_intent, 255), p_user_id: userId, p_email: email, p_sku: CREDIT_PACK.sku, p_credits: CREDIT_PACK.credits, p_amount_total: Number(session.amount_total), p_amount_tax: tax, p_currency: CREDIT_PACK.currency, p_live_mode: event.livemode === true }, env);
   return true;
 }

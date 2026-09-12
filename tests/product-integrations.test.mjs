@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { bidLensInternals, isBidLensStripeEvent } from "../src/bidlens-api.js";
+import { isRevenueLeakStripeEvent } from "../src/revenue-leak-api.js";
 import { isScopeFenceStripeEvent, scopeFenceInternals } from "../src/scopefence-api.js";
 
 function bidLensFixture() {
@@ -58,18 +59,31 @@ test("ScopeFence keeps only exact agreement quotes and downgrades an ungrounded 
   assert.equal(ungrounded.confidence, "low");
 });
 
-test("the central Stripe webhook can identify both product purchase events", () => {
-  assert.equal(isBidLensStripeEvent({ type: "checkout.session.completed", data: { object: { object: "checkout.session", metadata: { bidlens_flow: "credit_pack_v1" } } } }), true);
-  assert.equal(isScopeFenceStripeEvent({ type: "checkout.session.completed", data: { object: { object: "checkout.session", metadata: { scopefence_flow: "credit_pack_web_v1" } } } }), true);
-  assert.equal(isBidLensStripeEvent({ type: "checkout.session.completed", data: { object: { object: "checkout.session", metadata: { scopefence_flow: "credit_pack_web_v1" } } } }), false);
+test("the central Stripe webhook routes every Checkout product and delayed-payment event", () => {
+  const event = (type, metadata) => ({ type, data: { object: { object: "checkout.session", metadata } } });
+  const checkoutEvents = [
+    "checkout.session.completed",
+    "checkout.session.async_payment_succeeded",
+    "checkout.session.async_payment_failed",
+  ];
+
+  for (const type of checkoutEvents) {
+    assert.equal(isRevenueLeakStripeEvent(event(type, { revenue_leak_flow: "report_credit_pack_v1" })), true);
+    assert.equal(isBidLensStripeEvent(event(type, { bidlens_flow: "credit_pack_v1" })), true);
+    assert.equal(isScopeFenceStripeEvent(event(type, { scopefence_flow: "credit_pack_web_v1" })), true);
+  }
+
+  assert.equal(isBidLensStripeEvent(event("checkout.session.completed", { scopefence_flow: "credit_pack_web_v1" })), false);
+  assert.equal(isScopeFenceStripeEvent(event("payment_intent.succeeded", { scopefence_flow: "credit_pack_web_v1" })), false);
 });
 
 test("production routes, cookies, origins, storage flags, and webhook endpoints are isolated", async () => {
-  const [worker, platform, bidlens, scopefence, home, sitemap] = await Promise.all([
+  const [worker, platform, bidlens, scopefence, stripeSetup, home, sitemap] = await Promise.all([
     readFile(new URL("../src/index.js", import.meta.url), "utf8"),
     readFile(new URL("../src/product-platform.js", import.meta.url), "utf8"),
     readFile(new URL("../src/bidlens-api.js", import.meta.url), "utf8"),
     readFile(new URL("../src/scopefence-api.js", import.meta.url), "utf8"),
+    readFile(new URL("../STRIPE_SETUP.md", import.meta.url), "utf8"),
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sitemap.xml", import.meta.url), "utf8"),
   ]);
@@ -85,6 +99,16 @@ test("production routes, cookies, origins, storage flags, and webhook endpoints 
   assert.match(scopefence, /store: false/);
   assert.match(bidlens, /\/api\/bidlens\/stripe\/webhook/);
   assert.match(scopefence, /\/api\/scopefence\/stripe\/webhook/);
+  assert.match(bidlens, /payment_intent_data\[metadata\]\[bidlens_flow/);
+  assert.match(scopefence, /payment_intent_data\[metadata\]\[scopefence_flow/);
+  for (const eventType of [
+    "payment_intent.succeeded",
+    "payment_intent.payment_failed",
+    "payment_intent.canceled",
+    "checkout.session.completed",
+    "checkout.session.async_payment_succeeded",
+    "checkout.session.async_payment_failed",
+  ]) assert.match(stripeSetup, new RegExp(eventType.replaceAll(".", "\\.")));
   assert.doesNotMatch(`${bidlens}\n${scopefence}`, /idistudios|sofakingbannon|localhost|autobattle/i);
   assert.match(home, /\/projects\/bidlens\//);
   assert.match(home, /\/projects\/scopefence\//);

@@ -72,6 +72,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 
 - [ ] Create an environment-variable inventory with owner, environment, rotation procedure, and verification status.
 - [ ] Verify Turnstile, Supabase Auth, Resend, Stripe, and OpenAI in staging and production.
+- [x] Document and test the mixed PaymentIntent/Checkout routing contract and all required Stripe webhook event subscriptions.
 - [ ] Test Stripe webhook signature validation, idempotency, delayed events, failed payments, refunds, and replay/recovery.
 - [ ] Confirm every paid product grants exactly the purchased entitlement and cannot grant it from a browser-only action.
 
@@ -212,7 +213,7 @@ Never put secret values in this document.
 
 ## Verification record
 
-- [x] Sixteen repository tests, including ADBridge marketing, legacy routing, asset, and Chargeback Studio CSP regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
+- [x] Nineteen repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, and cross-product Stripe routing regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
 - [x] Main product pages and compiled product bundles returned HTTP 200.
 - [x] The CourierIQ admin API redirected unauthenticated access to Cloudflare Access.
 - [x] Product account APIs rejected unauthenticated requests.

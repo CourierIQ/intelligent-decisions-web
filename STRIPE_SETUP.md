@@ -1,12 +1,13 @@
-# Chargeback Studio Stripe payment setup
+# IDI Stripe payment routing
 
-Chargeback Studio owns the offer catalog, tier selection, totals review, and
-post-payment entitlement flow. Stripe is used only for tax calculation and
-payment processing through an embedded Payment Element backed by a server-side
-PaymentIntent.
+The public products share one Stripe account and one application-owned webhook,
+but each product keeps its own server-side entitlement path. Product metadata
+on the signed Stripe object determines which handler receives the event.
 
-No Stripe Products, Prices, Payment Links, or hosted Checkout Sessions are used
-for new purchases.
+Chargeback Studio uses an embedded Payment Element backed by a server-created
+PaymentIntent. Revenue Leak Finder, BidLens, and ScopeFence use server-created
+hosted Checkout Sessions. New Chargeback Studio purchases do not use Stripe
+Products, Prices, Payment Links, or hosted Checkout Sessions.
 
 ## On-site offers
 
@@ -67,12 +68,30 @@ Subscribe to:
 payment_intent.succeeded
 payment_intent.payment_failed
 payment_intent.canceled
+checkout.session.completed
+checkout.session.async_payment_succeeded
+checkout.session.async_payment_failed
 ```
 
 Store the endpoint's signing secret as `STRIPE_WEBHOOK_SECRET` in Cloudflare.
-The handler verifies the exact raw body, rejects stale or invalid signatures,
-records Stripe event IDs for idempotency, and unlocks the matching pack only
-after a signed `payment_intent.succeeded` event.
+The handler verifies the exact raw body and rejects stale or invalid signatures.
+It grants an entitlement only after a signed, paid success event. Failed or
+incomplete payments are acknowledged without granting access.
+
+## Product routing
+
+| Product | Stripe flow | Routing metadata | Entitlement target |
+| --- | --- | --- | --- |
+| Chargeback Studio | PaymentIntent | `offer_code` | Purchased response pack and order |
+| Revenue Leak Finder | Checkout Session | `revenue_leak_flow` | Report credits |
+| BidLens | Checkout Session | `bidlens_flow` | RFP-analysis credits |
+| ScopeFence | Checkout Session | `scopefence_flow` | Scope-analysis credits |
+
+The Checkout products copy their non-sensitive product, user, SKU, and credit
+metadata to the underlying PaymentIntent for Stripe Dashboard reconciliation.
+Fulfillment remains driven by the signed Checkout Session event, and each
+product's database function uses Stripe identifiers to make credit grants
+idempotent.
 
 ## Verification flow
 
@@ -85,5 +104,10 @@ after a signed `payment_intent.succeeded` event.
    `stripe_webhook_events` row.
 7. Confirm the purchased pack unlocks its clean, unmarked output.
 8. Replay the webhook and confirm no duplicate order or email is created.
+
+For each Checkout product, complete one test purchase, confirm the exact credit
+quantity is granted once, then replay the success event and confirm the balance
+does not change. Confirm an unpaid completion or asynchronous failure grants no
+credits, and an asynchronous success grants them exactly once.
 
 Use Stripe test mode for the complete flow before enabling matching live keys.

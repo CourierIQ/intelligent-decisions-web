@@ -24,6 +24,11 @@ const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_TEXT_BYTES = 750_000;
 const MIN_TEXT_CHARACTERS = 120;
 const STRIPE_API_ENDPOINT = "https://api.stripe.com/v1";
+const BIDLENS_STRIPE_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+]);
 const PRODUCTS = Object.freeze({
   analyses_10: Object.freeze({ sku: "analyses_10", credits: 10, priceCents: 2900 }),
   analyses_30: Object.freeze({ sku: "analyses_30", credits: 30, priceCents: 6900 }),
@@ -316,6 +321,7 @@ async function stripeCheckout(identity, product, idempotencyKey, request, env) {
     success_url: `${origin}/projects/bidlens/?payment=success`, cancel_url: `${origin}/projects/bidlens/?payment=cancelled`, billing_address_collection: "required", "automatic_tax[enabled]": "true", "payment_method_types[0]": "card",
     "line_items[0][quantity]": "1", "line_items[0][price_data][currency]": "usd", "line_items[0][price_data][unit_amount]": String(product.priceCents), "line_items[0][price_data][product_data][name]": `BidLens — ${product.credits} RFP analyses`,
     "metadata[bidlens_flow]": "credit_pack_v1", "metadata[bidlens_user_id]": identity.id, "metadata[bidlens_sku]": product.sku, "metadata[bidlens_credits]": String(product.credits),
+    "payment_intent_data[metadata][bidlens_flow]": "credit_pack_v1", "payment_intent_data[metadata][bidlens_user_id]": identity.id, "payment_intent_data[metadata][bidlens_sku]": product.sku, "payment_intent_data[metadata][bidlens_credits]": String(product.credits),
   });
   const response = await fetchWithTimeout(`${STRIPE_API_ENDPOINT}/checkout/sessions`, { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded", "Idempotency-Key": `bidlens:${identity.id}:${idempotencyKey}`, "Stripe-Version": "2025-06-30.basil" }, body: params.toString() }, 15000);
   const body = await response.json(); if (!response.ok || body?.object !== "checkout.session" || !String(body?.url || "").startsWith("https://checkout.stripe.com/")) throw new Error("stripe_checkout_failed");
@@ -323,7 +329,7 @@ async function stripeCheckout(identity, product, idempotencyKey, request, env) {
 }
 
 export function isBidLensStripeEvent(event) {
-  return event?.type === "checkout.session.completed" &&
+  return BIDLENS_STRIPE_EVENTS.has(event?.type) &&
     event?.data?.object?.object === "checkout.session" &&
     event?.data?.object?.metadata?.bidlens_flow === "credit_pack_v1";
 }
@@ -331,8 +337,9 @@ export function isBidLensStripeEvent(event) {
 export async function fulfillBidLensStripeEvent(event, env) {
   if (!isBidLensStripeEvent(event)) return false;
   const session = event.data.object; const metadata = session.metadata || {};
+  if (event.type === "checkout.session.async_payment_failed" || session.payment_status !== "paid") return true;
   const product = PRODUCTS[metadata.bidlens_sku]; const userId = cleanString(metadata.bidlens_user_id, 80);
-  if (session.mode !== "payment" || session.payment_status !== "paid" || !String(session.id || "").startsWith("cs_") || session.client_reference_id !== userId || !/^[0-9a-f-]{36}$/i.test(userId) || !product || Number(metadata.bidlens_credits) !== product.credits || Number(session.amount_subtotal) !== product.priceCents || Number(session.amount_total) < product.priceCents || String(session.currency).toLowerCase() !== "usd") throw new Error("invalid_bidlens_purchase");
+  if (session.mode !== "payment" || !String(session.id || "").startsWith("cs_") || session.client_reference_id !== userId || !/^[0-9a-f-]{36}$/i.test(userId) || !product || Number(metadata.bidlens_credits) !== product.credits || Number(session.amount_subtotal) !== product.priceCents || Number(session.amount_total) < product.priceCents || String(session.currency).toLowerCase() !== "usd") throw new Error("invalid_bidlens_purchase");
   await rpc("bidlens_fulfill_purchase", { p_event_id: cleanString(event.id, 255), p_checkout_id: cleanString(session.id, 255), p_user_id: userId, p_sku: product.sku, p_credits: product.credits, p_currency: "usd", p_amount_subtotal: Number(session.amount_subtotal), p_amount_total: Number(session.amount_total), p_livemode: event.livemode === true }, env);
   return true;
 }
