@@ -216,6 +216,103 @@ h2 {
   width: min(100%, 880px);
 }
 
+.hero-adbridge {
+  background:
+    radial-gradient(circle at 84% 18%, rgba(22, 131, 255, 0.24), transparent 28%),
+    radial-gradient(circle at 72% 74%, rgba(75, 230, 21, 0.09), transparent 22%),
+    linear-gradient(135deg, #03133b, #010a24);
+}
+
+.hero-adbridge .hero-content {
+  width: min(100%, 980px);
+}
+
+.adbridge-home-identity {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 32px;
+}
+
+.adbridge-home-identity img {
+  border: 1px solid rgba(104, 173, 255, 0.28);
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(22, 131, 255, 0.22);
+}
+
+.adbridge-home-identity .eyebrow {
+  margin-bottom: 5px;
+  color: #4be615;
+}
+
+.adbridge-home-identity h1 {
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.hero.hero-adbridge h2 {
+  max-width: 920px;
+  margin-top: 0;
+  color: var(--white);
+  font-size: clamp(3.1rem, 6vw, 6.4rem);
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.hero-adbridge .description {
+  max-width: 800px;
+  color: #aebbd8;
+  font-size: clamp(1.02rem, 1.35vw, 1.2rem);
+}
+
+.hero-adbridge .btn.primary {
+  border-color: #4be615;
+  background: #4be615;
+  color: #010a24;
+}
+
+.hero-adbridge .btn.primary:hover {
+  border-color: #a3ff84;
+  background: #a3ff84;
+  box-shadow: 0 14px 36px rgba(75, 230, 21, 0.18);
+}
+
+.hero-adbridge .btn.secondary {
+  border-color: rgba(104, 173, 255, 0.72);
+}
+
+.hero-adbridge .btn.secondary:hover {
+  background: rgba(22, 131, 255, 0.14);
+}
+
+.adbridge-home-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-top: 34px;
+  color: #aebbd8;
+  font-size: 0.79rem;
+  list-style: none;
+}
+
+.adbridge-home-trust li {
+  position: relative;
+  padding-left: 15px;
+}
+
+.adbridge-home-trust li::before {
+  position: absolute;
+  top: 0.48em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4be615;
+  box-shadow: 0 0 13px rgba(75, 230, 21, 0.72);
+  content: "";
+}
+
 .idi-logo {
   position: relative;
   display: inline-block;
@@ -652,6 +749,37 @@ h2 {
   font-weight: 700;
 }
 
+.adbridge-project-card {
+  grid-column: span 2;
+  min-height: 240px;
+  padding: 30px;
+  border-color: rgba(22, 131, 255, 0.46);
+  background:
+    radial-gradient(circle at 92% 18%, rgba(75, 230, 21, 0.12), transparent 28%),
+    linear-gradient(135deg, rgba(3, 19, 59, 0.96), rgba(10, 34, 85, 0.92));
+}
+
+.adbridge-project-card:hover,
+.adbridge-project-card:focus-visible {
+  border-color: rgba(75, 230, 21, 0.62);
+  background:
+    radial-gradient(circle at 92% 18%, rgba(75, 230, 21, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(3, 19, 59, 0.98), rgba(18, 52, 107, 0.94));
+}
+
+.ecosystem-card.adbridge-project-card .product-status,
+.adbridge-project-card .project-card-link {
+  color: #4be615;
+}
+
+.adbridge-project-card h3 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.adbridge-project-card > p:not(.product-status) {
+  max-width: 600px;
+}
+
 /* Contact */
 
 .contact {
@@ -789,6 +917,24 @@ footer {
     line-height: 1.08;
   }
 
+  .adbridge-home-identity {
+    gap: 16px;
+  }
+
+  .adbridge-home-identity img {
+    width: 64px;
+    height: 64px;
+    border-radius: 19px;
+  }
+
+  .adbridge-home-identity h1 {
+    font-size: 2rem;
+  }
+
+  .hero-adbridge h2 {
+    font-size: clamp(2.75rem, 12.5vw, 4.4rem);
+  }
+
   .tagline {
     max-width: 100%;
     font-size: 1.35rem;
@@ -891,6 +1037,10 @@ footer {
 
   .ecosystem-card {
     min-height: auto;
+  }
+
+  .adbridge-project-card {
+    grid-column: auto;
   }
 
   .ecosystem-card > p:not(.product-status) {

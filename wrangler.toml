@@ -8,7 +8,10 @@ routes = [
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/admin/api/*"]
+run_worker_first = true
 
 [vars]
 SUPABASE_URL = "https://jlbtbpngvqyaiatslphi.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_dXtSleDC4yB8OOrOMLmPJg_7n9-i8Lu"
+EVIDENCELANE_ORIGIN = "https://intelligentdecisions.io"
+CHARGEBACK_STUDIO_URL = "https://intelligentdecisions.io/projects/chargeback-studio"

@@ -8,9 +8,19 @@
   />
   <meta
     name="description"
-    content="Intelligent Decisions Interactive builds software that transforms complex information into clear, actionable decisions."
+    content="Intelligent Decisions Interactive builds ADBridge, the secure Android hardware-execution platform for developers, automation, and AI agents."
   />
-  <title>Intelligent Decisions Interactive</title>
+  <meta property="og:title" content="ADBridge by Intelligent Decisions Interactive" />
+  <meta
+    property="og:description"
+    content="Build, deploy, observe, and test authorized Android applications on real hardware without exposing raw ADB or a shell."
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://intelligentdecisions.io/" />
+  <meta property="og:image" content="https://intelligentdecisions.io/images/adbridge-mark.png" />
+  <title>ADBridge by Intelligent Decisions Interactive</title>
+  <link rel="canonical" href="https://intelligentdecisions.io/" />
+  <link rel="icon" href="/images/adbridge-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -33,36 +43,47 @@
       <a href="#contact">Contact</a>
     </nav>
 
-    <a href="#courieriq" class="nav-cta">
-      Private Beta
+    <a href="/projects/adbridge/" class="nav-cta">
+      Explore ADBridge
     </a>
   </header>
 
   <main>
-    <section id="home" class="hero">
+    <section id="home" class="hero hero-adbridge">
       <div class="hero-content">
-        <p class="eyebrow">Intelligent Decisions Interactive</p>
+        <div class="adbridge-home-identity">
+          <img src="/images/adbridge-mark.png" alt="" width="82" height="82" />
+          <div>
+            <p class="eyebrow">IDI Studios · Flagship Product</p>
+            <h1>ADBridge</h1>
+          </div>
+        </div>
 
-        <h1 class="idi-logo" aria-label="IDI">
-          <span>IDI</span>
-        </h1>
-
-        <h2>Clarity over Complexity.</h2>
-
-        <p class="tagline">
-          Software that helps people make better decisions.
-        </p>
+        <h2>Build here. Run on real Android hardware anywhere.</h2>
 
         <p class="description">
-          We build intelligent software that transforms complex information
-          into clear, actionable decisions through thoughtful design,
-          automation, and uncompromising user experience.
+          Secure Android deployment and testing for developers, automation, and
+          AI agents. ADBridge connects authorized development workflows to
+          physical devices through private, policy-controlled infrastructure—
+          without exposing raw ADB or a shell.
         </p>
 
         <div class="actions">
-          <a href="#courieriq" class="btn primary">Explore CourierIQ</a>
-          <a href="#mission" class="btn secondary">Our Mission</a>
+          <a href="/projects/adbridge/" class="btn primary">Explore ADBridge</a>
+          <a
+            href="mailto:bhall@intelligentdecisions.io?subject=ADBridge%20Enterprise%20Early%20Access"
+            class="btn secondary"
+          >
+            Request Enterprise Early Access
+          </a>
         </div>
+
+        <ul class="adbridge-home-trust" aria-label="ADBridge highlights">
+          <li>Open-source Developer edition</li>
+          <li>Policy-bound deployment</li>
+          <li>Physical Android hardware</li>
+          <li>AI-agent ready</li>
+        </ul>
       </div>
     </section>
 
@@ -86,7 +107,7 @@
       aria-label="CourierIQ product features"
     >
       <div class="showcase-mobile-heading" aria-hidden="true">
-        <p class="eyebrow">Flagship Product</p>
+        <p class="eyebrow">Private Beta</p>
         <h2>CourierIQ</h2>
       </div>
 
@@ -113,7 +134,7 @@
           >
             <div class="showcase-slide-inner">
               <div class="product-heading">
-                <p class="eyebrow">Flagship Product</p>
+                <p class="eyebrow">CourierIQ · Private Beta</p>
                 <h2>CourierIQ</h2>
               </div>
 
@@ -193,7 +214,7 @@
           >
             <div class="showcase-slide-inner">
               <div class="product-heading">
-                <p class="eyebrow">Flagship Product · Inside Uber App</p>
+                <p class="eyebrow">CourierIQ Private Beta · In-App Overlay</p>
                 <h2>CourierIQ</h2>
               </div>
 
@@ -273,7 +294,7 @@
           >
             <div class="showcase-slide-inner">
               <div class="product-heading">
-                <p class="eyebrow">Flagship Product · Session History</p>
+                <p class="eyebrow">CourierIQ Private Beta · Session History</p>
                 <h2>CourierIQ</h2>
               </div>
 
@@ -385,6 +406,13 @@
         <h2>One company. Multiple intelligent solutions.</h2>
 
         <div class="ecosystem-grid">
+          <a class="ecosystem-card featured project-card adbridge-project-card" href="/projects/adbridge/">
+            <p class="product-status">Flagship Product · Developer + Enterprise Early Access</p>
+            <h3>ADBridge</h3>
+            <p>Secure Android hardware execution for developers, automation, and AI agents.</p>
+            <span class="project-card-link">Explore ADBridge <span aria-hidden="true">→</span></span>
+          </a>
+
           <a class="ecosystem-card featured project-card" href="/projects/courieriq/">
             <p class="product-status">Private Beta</p>
             <h3>CourierIQ</h3>
@@ -392,11 +420,32 @@
             <span class="project-card-link">View project <span aria-hidden="true">→</span></span>
           </a>
 
-          <a class="ecosystem-card featured project-card" href="/projects/evidencelane/">
-            <p class="product-status">Live MVP</p>
-            <h3>EvidenceLane</h3>
-            <p>Private, reviewer-ready chargeback evidence packets for merchants.</p>
-            <span class="project-card-link">View project <span aria-hidden="true">→</span></span>
+          <a class="ecosystem-card featured project-card" href="/projects/chargeback-studio/">
+            <p class="product-status">Live</p>
+            <h3>Chargeback Studio</h3>
+            <p>Build a free chargeback evidence preview and unlock a clean, processor-ready response pack from $29.</p>
+            <span class="project-card-link">Build a free preview <span aria-hidden="true">→</span></span>
+          </a>
+
+          <a class="ecosystem-card featured project-card" href="/projects/revenue-leak-finder/">
+            <p class="product-status">Live Utility</p>
+            <h3>Revenue Leak Finder</h3>
+            <p>Reconcile revenue exports, reveal exceptions, and recover what slipped through.</p>
+            <span class="project-card-link">Run a reconciliation <span aria-hidden="true">→</span></span>
+          </a>
+
+          <a class="ecosystem-card featured project-card" href="/projects/bidlens/">
+            <p class="product-status">RFP Workspace</p>
+            <h3>BidLens</h3>
+            <p>Turn an RFP into grounded requirements, risks, deadlines, clarifying questions, and a transparent bid score.</p>
+            <span class="project-card-link">Analyze an RFP <span aria-hidden="true">→</span></span>
+          </a>
+
+          <a class="ecosystem-card featured project-card" href="/projects/scopefence/">
+            <p class="product-status">Scope Workspace</p>
+            <h3>ScopeFence</h3>
+            <p>Check client requests against the agreement, price the impact, and prepare a clear change order.</p>
+            <span class="project-card-link">Check a request <span aria-hidden="true">→</span></span>
           </a>
 
           <article class="ecosystem-card">
@@ -429,7 +478,7 @@
         <h2>Build with clarity.</h2>
 
         <p class="contact-copy">
-          Questions about CourierIQ, private beta access, or Intelligent Decisions Interactive?
+          Questions about ADBridge, Enterprise Early Access, CourierIQ, or Intelligent Decisions Interactive?
         </p>
 
         <a href="mailto:bhall@intelligentdecisions.io" class="btn primary">

@@ -1,9 +1,29 @@
+import {
+  fulfillRevenueLeakStripeEvent,
+  handleRevenueLeakApi,
+  isRevenueLeakStripeEvent,
+} from "./revenue-leak-api.js";
+import {
+  fulfillBidLensStripeEvent,
+  handleBidLensApi,
+  isBidLensStripeEvent,
+} from "./bidlens-api.js";
+import {
+  fulfillScopeFenceStripeEvent,
+  handleScopeFenceApi,
+  isScopeFenceStripeEvent,
+} from "./scopefence-api.js";
+
 "use strict";
 
 const ALLOWED_HOSTNAMES = new Set([
   "intelligentdecisions.io",
   "www.intelligentdecisions.io",
 ]);
+const SUPABASE_BROWSER_ORIGIN = "https://jlbtbpngvqyaiatslphi.supabase.co";
+const SUPABASE_BROWSER_SOCKET_ORIGIN = "wss://jlbtbpngvqyaiatslphi.supabase.co";
+const CHARGEBACK_JSON_LD_HASH = "'sha256-CeWR5X2Yc5Q5PE02aGYqfbaN9hwJ2VTGq1A1Ph9rpNI='";
+const INSIGHT_JSON_LD_HASH = "'sha256-81aEH7XxxkGx983XTGYRJ3Rvup8FflNXlJUXOEORX8Y='";
 const BETA_NOTIFICATION_TO = "bhall@intelligentdecisions.io";
 const ALLOWED_PLATFORMS = new Set([
   "Uber Eats",
@@ -30,8 +50,49 @@ const ALLOWED_STATUSES = new Set([
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const TURNSTILE_ENDPOINT =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const STRIPE_API_ENDPOINT = "https://api.stripe.com/v1";
+const STRIPE_SIGNATURE_TOLERANCE_SECONDS = 300;
+const EVIDENCELANE_TIERS = Object.freeze({
+  single: Object.freeze({
+    code: "single",
+    offerCode: "evidencelane_pack_20",
+    label: "Starter",
+    amount: 2900,
+    maxCases: Number.MAX_SAFE_INTEGER,
+    maxFiles: 20,
+  }),
+  multi: Object.freeze({
+    code: "multi",
+    offerCode: "evidencelane_pack_50",
+    label: "Growth",
+    amount: 4900,
+    maxCases: Number.MAX_SAFE_INTEGER,
+    maxFiles: 50,
+  }),
+  volume: Object.freeze({
+    code: "volume",
+    offerCode: "evidencelane_pack_100",
+    label: "Volume",
+    amount: 7900,
+    maxCases: Number.MAX_SAFE_INTEGER,
+    maxFiles: 100,
+  }),
+});
+const EVIDENCELANE_OFFER_CODES = new Set(
+  Object.values(EVIDENCELANE_TIERS).map((tier) => tier.offerCode),
+);
+const EVIDENCELANE_STRIPE_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+  "payment_intent.succeeded",
+  "payment_intent.payment_failed",
+  "payment_intent.canceled",
+]);
 const BETA_FROM_EMAIL =
   "CourierIQ Beta <beta@intelligentdecisions.io>";
+const EVIDENCELANE_FROM_EMAIL =
+  "Chargeback Studio <evidencelane@intelligentdecisions.io>";
 const ADMIN_REQUEST_SELECT = [
   "id",
   "first_name",
@@ -195,6 +256,212 @@ async function fetchWithTimeout(resource, options = {}, timeoutMs = 10000) {
   }
 }
 
+function chargebackStudioUrl(env) {
+  try {
+    const url = new URL(env.CHARGEBACK_STUDIO_URL || env.EVIDENCELANE_ORIGIN || "");
+    return url.protocol === "https:" ? url.href.replace(/\/+$/, "") : "";
+  } catch {
+    return "";
+  }
+}
+
+function evidenceLaneOrigin(env) {
+  const siteUrl = chargebackStudioUrl(env);
+  return siteUrl ? new URL(siteUrl).origin : "";
+}
+
+function isAllowedCheckoutOrigin(request, env) {
+  const origin = request.headers.get("Origin");
+
+  try {
+    // Browsers normally omit Origin on same-origin GET requests. In that case,
+    // validate the actual request URL; cross-origin browser requests still send
+    // Origin and are checked against the allowlist below.
+    const originUrl = new URL(origin || request.url);
+    return (
+      originUrl.protocol === "https:" &&
+      (ALLOWED_HOSTNAMES.has(originUrl.hostname) ||
+        originUrl.origin === evidenceLaneOrigin(env))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function evidenceLaneCorsHeaders(request, env) {
+  const origin = request.headers.get("Origin");
+  if (!origin || origin !== evidenceLaneOrigin(env)) return {};
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type",
+    Vary: "Origin",
+  };
+}
+
+function resolveEvidenceLaneTier(caseCount, fileCount) {
+  return Object.values(EVIDENCELANE_TIERS).find(
+    (tier) => caseCount <= tier.maxCases && fileCount <= tier.maxFiles,
+  ) || null;
+}
+
+function evidenceLaneTierFromOfferCode(offerCode) {
+  return Object.values(EVIDENCELANE_TIERS).find(
+    (tier) => tier.offerCode === offerCode,
+  ) || null;
+}
+
+async function stripeApiRequest(path, parameters, idempotencyKey, env) {
+  const response = await fetchWithTimeout(
+    `${STRIPE_API_ENDPOINT}${path}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: parameters.toString(),
+    },
+    10000,
+  );
+  const responseText = await response.text();
+  let result = {};
+
+  if (responseText) {
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      result = {};
+    }
+  }
+
+  if (!response.ok) {
+    console.error(
+      "Stripe API request failed",
+      response.status,
+      result?.error?.type || "unknown_error",
+      result?.error?.code || "unknown_code",
+    );
+    const error = new Error(`Stripe API request failed (${response.status}).`);
+    error.stripeCode = cleanString(result?.error?.code, 100);
+    throw error;
+  }
+
+  return result;
+}
+
+async function stripeApiGet(path, env) {
+  const response = await fetchWithTimeout(
+    `${STRIPE_API_ENDPOINT}${path}`,
+    {
+      method: "GET",
+      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+    },
+    10000,
+  );
+  const responseText = await response.text();
+  let result = {};
+  if (responseText) {
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      result = {};
+    }
+  }
+  if (!response.ok) {
+    console.error(
+      "Stripe API request failed",
+      response.status,
+      result?.error?.type || "unknown_error",
+      result?.error?.code || "unknown_code",
+    );
+    throw new Error(`Stripe API request failed (${response.status}).`);
+  }
+  return result;
+}
+
+function stripeKeyMode(value) {
+  const key = cleanString(value, 255);
+  if (/^(?:sk|rk|pk)_live_/.test(key)) return "live";
+  if (/^(?:sk|rk|pk)_test_/.test(key)) return "test";
+  return "unknown";
+}
+
+async function sha256Hex(value) {
+  const bytes = new TextEncoder().encode(String(value));
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function normalizeBillingAddress(value) {
+  const address = value && typeof value === "object" ? value : {};
+  const country = cleanString(address.country, 2).toUpperCase();
+  const postalCode = cleanString(address.postal_code, 20);
+  if (!/^[A-Z]{2}$/.test(country) || !postalCode) return null;
+  return {
+    line1: cleanString(address.line1, 200),
+    line2: cleanString(address.line2, 200),
+    city: cleanString(address.city, 120),
+    state: cleanString(address.state, 120),
+    postalCode,
+    country,
+  };
+}
+
+function parseStripeSignature(signatureHeader) {
+  const parsed = { timestamp: 0, signatures: [] };
+  for (const part of String(signatureHeader || "").split(",")) {
+    const separator = part.indexOf("=");
+    if (separator < 1) continue;
+    const key = part.slice(0, separator).trim();
+    const value = part.slice(separator + 1).trim();
+    if (key === "t") parsed.timestamp = Number(value);
+    if (key === "v1") parsed.signatures.push(value);
+  }
+  return parsed;
+}
+
+function hexToBytes(value) {
+  if (!/^[0-9a-f]{64}$/i.test(value)) return null;
+  const bytes = new Uint8Array(value.length / 2);
+  for (let index = 0; index < value.length; index += 2) {
+    bytes[index / 2] = Number.parseInt(value.slice(index, index + 2), 16);
+  }
+  return bytes;
+}
+
+async function verifyStripeSignature(rawBody, signatureHeader, secret) {
+  const { timestamp, signatures } = parseStripeSignature(signatureHeader);
+  if (!Number.isInteger(timestamp) || !signatures.length) return false;
+
+  const age = Math.abs(Math.floor(Date.now() / 1000) - timestamp);
+  if (age > STRIPE_SIGNATURE_TOLERANCE_SECONDS) return false;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  );
+  const signedPayload = encoder.encode(`${timestamp}.${rawBody}`);
+
+  for (const signature of signatures) {
+    const signatureBytes = hexToBytes(signature);
+    if (
+      signatureBytes &&
+      (await crypto.subtle.verify("HMAC", key, signatureBytes, signedPayload))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function verifyTurnstile(token, request, env) {
   const remoteIp = request.headers.get("CF-Connecting-IP") || undefined;
   let response;
@@ -238,13 +505,8 @@ function supabaseHeaders(env, prefer) {
     Accept: "application/json",
     "Content-Type": "application/json",
     apikey: env.SUPABASE_SECRET_KEY,
+    Authorization: `Bearer ${env.SUPABASE_SECRET_KEY}`,
   };
-
-  // Legacy service_role JWTs require Authorization. New sb_secret_ keys
-  // are passed through the apikey header only.
-  if (!env.SUPABASE_SECRET_KEY.startsWith("sb_")) {
-    headers.Authorization = `Bearer ${env.SUPABASE_SECRET_KEY}`;
-  }
   if (prefer) headers.Prefer = prefer;
   return headers;
 }
@@ -277,6 +539,94 @@ async function supabaseRequest(path, options, env, timeoutMs = 10000) {
   }
 
   return { response, body };
+}
+
+async function authenticateChargebackUser(request, env) {
+  const authorization = cleanString(request.headers.get("Authorization"), 4096);
+  const publishableKey = env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_SECRET_KEY;
+  if (!authorization.startsWith("Bearer ") || !env.SUPABASE_URL || !publishableKey) {
+    return null;
+  }
+
+  const headers = {
+    Accept: "application/json",
+    apikey: publishableKey,
+    Authorization: authorization,
+  };
+  const response = await fetchWithTimeout(
+    `${supabaseBaseUrl(env)}/auth/v1/user`,
+    { method: "GET", headers },
+    10000,
+  );
+  if (response.status === 401 || response.status === 403) return null;
+  if (!response.ok) throw new Error(`Supabase Auth verification failed (${response.status}).`);
+  const user = await response.json();
+  return user?.id && user?.email ? user : null;
+}
+
+async function getChargebackPackContext(packId, userId, env) {
+  const packQuery =
+    `chargeback_packs?id=eq.${encodeURIComponent(packId)}` +
+    "&select=id,organization_id,name,status,stripe_checkout_session_id,stripe_payment_intent_id&limit=1";
+  const { body: packs } = await supabaseRequest(
+    packQuery,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  const pack = Array.isArray(packs) ? packs[0] : null;
+  if (!pack?.id || !pack?.organization_id) return null;
+
+  const membershipQuery =
+    `chargeback_organization_members?organization_id=eq.${encodeURIComponent(pack.organization_id)}` +
+    `&user_id=eq.${encodeURIComponent(userId)}&select=role&limit=1`;
+  const { body: memberships } = await supabaseRequest(
+    membershipQuery,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  if (!Array.isArray(memberships) || !memberships.length) return null;
+
+  const linksQuery =
+    `chargeback_pack_disputes?pack_id=eq.${encodeURIComponent(packId)}` +
+    "&select=dispute_id&order=position.asc";
+  const { body: links } = await supabaseRequest(
+    linksQuery,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  const disputeIds = Array.isArray(links)
+    ? links.map((entry) => cleanString(entry.dispute_id, 80)).filter(Boolean)
+    : [];
+  let fileCount = 0;
+  if (disputeIds.length) {
+    const evidenceQuery =
+      `chargeback_evidence_files?dispute_id=in.(${disputeIds.join(",")})` +
+      "&select=id";
+    const { body: evidence } = await supabaseRequest(
+      evidenceQuery,
+      { method: "GET", headers: supabaseHeaders(env) },
+      env,
+    );
+    fileCount = Array.isArray(evidence) ? evidence.length : 0;
+  }
+
+  return {
+    pack,
+    caseCount: disputeIds.length,
+    fileCount,
+  };
+}
+
+async function updateChargebackPack(packId, changes, env) {
+  await supabaseRequest(
+    `chargeback_packs?id=eq.${encodeURIComponent(packId)}`,
+    {
+      method: "PATCH",
+      headers: supabaseHeaders(env, "return=minimal"),
+      body: JSON.stringify({ ...changes, updated_at: new Date().toISOString() }),
+    },
+    env,
+  );
 }
 
 async function upsertApplication(application, env) {
@@ -393,6 +743,134 @@ async function insertEvent(event, env) {
   );
 }
 
+async function hasProcessedStripeEvent(eventId, env) {
+  const query =
+    "stripe_webhook_events" +
+    `?event_id=eq.${encodeURIComponent(eventId)}` +
+    "&select=event_id&limit=1";
+  const { body } = await supabaseRequest(
+    query,
+    { method: "GET", headers: supabaseHeaders(env) },
+    env,
+  );
+  return Array.isArray(body) && body.length > 0;
+}
+
+async function upsertEvidenceLaneOrder(paymentObject, eventType, env) {
+  const isPaymentIntent = paymentObject?.object === "payment_intent";
+  const conflictColumn = isPaymentIntent
+    ? "stripe_payment_intent_id"
+    : "stripe_checkout_session_id";
+  const query =
+    `evidencelane_orders?on_conflict=${conflictColumn}` +
+    "&select=id,order_reference,batch_id,pack_id,organization_id,user_id,tier_code,case_count,file_count,customer_email,amount_total,currency,payment_status";
+  const customerEmail = cleanString(
+    isPaymentIntent
+      ? paymentObject.receipt_email || paymentObject.metadata?.customer_email
+      : paymentObject.customer_details?.email,
+    254,
+  ).toLowerCase();
+  const tier = evidenceLaneTierFromOfferCode(
+    cleanString(paymentObject.metadata?.offer_code, 80),
+  );
+  if (!tier) throw new Error("Stripe payment contains an unknown Chargeback Studio tier.");
+  const orderReference = cleanString(
+    paymentObject.metadata?.order_reference || paymentObject.client_reference_id,
+    80,
+  );
+  const batchId = cleanString(paymentObject.metadata?.batch_id, 80);
+  const caseCount = Number(paymentObject.metadata?.case_count);
+  const fileCount = Number(paymentObject.metadata?.file_count);
+  const now = new Date().toISOString();
+  const paid = isPaymentIntent
+    ? paymentObject.status === "succeeded"
+    : paymentObject.payment_status === "paid";
+  const { body } = await supabaseRequest(
+    query,
+    {
+      method: "POST",
+      headers: supabaseHeaders(
+        env,
+        "resolution=merge-duplicates,return=representation",
+      ),
+      body: JSON.stringify([
+        {
+          order_reference: orderReference,
+          batch_id: batchId,
+          pack_id: cleanString(paymentObject.metadata?.pack_id, 80) || null,
+          organization_id: cleanString(paymentObject.metadata?.organization_id, 80) || null,
+          user_id: cleanString(paymentObject.metadata?.user_id, 80) || null,
+          offer_code: tier.offerCode,
+          tier_code: tier.code,
+          case_count: Number.isInteger(caseCount) ? caseCount : 0,
+          file_count: Number.isInteger(fileCount) ? fileCount : 0,
+          stripe_checkout_session_id: isPaymentIntent
+            ? null
+            : cleanString(paymentObject.id, 255),
+          stripe_payment_intent_id: isPaymentIntent
+            ? cleanString(paymentObject.id, 255)
+            : cleanString(
+                typeof paymentObject.payment_intent === "string"
+                  ? paymentObject.payment_intent
+                  : paymentObject.payment_intent?.id,
+                255,
+              ) || null,
+          stripe_customer_id: cleanString(
+            typeof paymentObject.customer === "string"
+              ? paymentObject.customer
+              : paymentObject.customer?.id,
+            255,
+          ) || null,
+          customer_email: customerEmail || null,
+          amount_total: Number.isInteger(isPaymentIntent ? paymentObject.amount : paymentObject.amount_total)
+            ? (isPaymentIntent ? paymentObject.amount : paymentObject.amount_total)
+            : null,
+          amount_tax: Number.isInteger(
+            isPaymentIntent
+              ? Number(paymentObject.metadata?.amount_tax)
+              : paymentObject.total_details?.amount_tax,
+          )
+            ? (isPaymentIntent
+                ? Number(paymentObject.metadata?.amount_tax)
+                : paymentObject.total_details.amount_tax)
+            : null,
+          currency: cleanString(paymentObject.currency, 3).toLowerCase() || null,
+          payment_status: paid ? "paid" : "unpaid",
+          checkout_status: paid || paymentObject.status === "canceled" ? "complete" : "open",
+          last_event_type: cleanString(eventType, 100),
+          livemode: paymentObject.livemode === true,
+          paid_at: paid ? now : null,
+          updated_at: now,
+        },
+      ]),
+    },
+    env,
+  );
+
+  const order = Array.isArray(body) ? body[0] : null;
+  if (!order?.id) throw new Error("Supabase did not return the EvidenceLane order.");
+  return order;
+}
+
+async function insertStripeWebhookEvent(event, objectId, env) {
+  await supabaseRequest(
+    "stripe_webhook_events",
+    {
+      method: "POST",
+      headers: supabaseHeaders(env, "return=minimal"),
+      body: JSON.stringify([
+        {
+          event_id: cleanString(event.id, 255),
+          event_type: cleanString(event.type, 100),
+          object_id: cleanString(objectId, 255) || null,
+          livemode: event.livemode === true,
+        },
+      ]),
+    },
+    env,
+  );
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -408,6 +886,18 @@ function formatSubmissionTime(value = new Date()) {
     timeStyle: "short",
     timeZone: "America/New_York",
   }).format(new Date(value));
+}
+
+function formatCurrency(amount, currency) {
+  if (!Number.isInteger(amount) || !currency) return "Unknown amount";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  } catch {
+    return `${amount} ${currency.toUpperCase()}`;
+  }
 }
 
 async function sendResendEmail(message, idempotencyKey, env) {
@@ -517,6 +1007,77 @@ function buildApplicantEmail(application) {
       "",
       "— Intelligent Decisions Interactive",
       "Clarity over Complexity.",
+    ].join("\n"),
+  };
+}
+
+function buildEvidenceLaneCustomerEmail(order, env) {
+  const amount = formatCurrency(order.amount_total, order.currency);
+  const siteUrl = chargebackStudioUrl(env);
+  return {
+    from: EVIDENCELANE_FROM_EMAIL,
+    to: [order.customer_email],
+    subject: "Your Chargeback Studio pack is unlocked",
+    reply_to: BETA_NOTIFICATION_TO,
+    tags: [
+      { name: "type", value: "evidencelane-order" },
+      { name: "source", value: "stripe-checkout" },
+    ],
+    html: `
+      <h1>Your clean Chargeback Studio pack is unlocked.</h1>
+      <p>We received your ${escapeHtml(amount)} payment for the ${escapeHtml(order.tier_code)} tier.</p>
+      <p><strong>Order reference:</strong> ${escapeHtml(order.order_reference)}</p>
+      <p><strong>Batch:</strong> ${order.case_count} case${order.case_count === 1 ? "" : "s"} · ${order.file_count} file${order.file_count === 1 ? "" : "s"}</p>
+      <p><a href="${escapeHtml(siteUrl)}">Open Chargeback Studio</a> and sign in to generate the clean, unmarked pack from your private workspace.</p>
+      <p>Chargeback Studio does not submit disputes or guarantee outcomes. Confirm every statement and your processor’s current requirements before submission.</p>
+      <p>— Chargeback Studio by Intelligent Decisions Interactive</p>
+    `,
+    text: [
+      "Your Chargeback Studio order is confirmed.",
+      "",
+      `Payment: ${amount}`,
+      `Order reference: ${order.order_reference}`,
+      `Batch: ${order.case_count} case(s), ${order.file_count} file(s)`,
+      `Open Chargeback Studio: ${siteUrl}`,
+      "",
+      "Open Chargeback Studio and sign in to generate the clean, unmarked pack from your private workspace.",
+      "Chargeback Studio does not submit disputes or guarantee outcomes. Confirm every statement and your processor's current requirements before submission.",
+      "",
+      "— Chargeback Studio by Intelligent Decisions Interactive",
+    ].join("\n"),
+  };
+}
+
+function buildEvidenceLaneAdminEmail(order) {
+  const amount = formatCurrency(order.amount_total, order.currency);
+  return {
+    from: EVIDENCELANE_FROM_EMAIL,
+    to: [BETA_NOTIFICATION_TO],
+    subject: `Paid Chargeback Studio order — ${order.order_reference}`,
+    reply_to: order.customer_email,
+    tags: [
+      { name: "type", value: "evidencelane-paid-order" },
+      { name: "source", value: "stripe-webhook" },
+    ],
+    html: `
+      <h1>New paid Chargeback Studio order</h1>
+      <p><strong>Order reference:</strong> ${escapeHtml(order.order_reference)}</p>
+      <p><strong>Customer:</strong> ${escapeHtml(order.customer_email)}</p>
+      <p><strong>Payment:</strong> ${escapeHtml(amount)}</p>
+      <p><strong>Tier:</strong> ${escapeHtml(order.tier_code)}</p>
+      <p><strong>Batch:</strong> ${order.case_count} case${order.case_count === 1 ? "" : "s"} · ${order.file_count} file${order.file_count === 1 ? "" : "s"}</p>
+      <p>The signed Stripe event unlocked clean local export for this batch.</p>
+    `,
+    text: [
+      "New paid Chargeback Studio order",
+      "",
+      `Order reference: ${order.order_reference}`,
+      `Customer: ${order.customer_email}`,
+      `Payment: ${amount}`,
+      `Tier: ${order.tier_code}`,
+      `Batch: ${order.case_count} case(s), ${order.file_count} file(s)`,
+      "",
+      "The signed Stripe event unlocked clean local export for this batch.",
     ].join("\n"),
   };
 }
@@ -676,6 +1237,620 @@ async function readJsonRequest(request, maxLength = 20000) {
     return { payload: JSON.parse(rawBody || "{}") };
   } catch {
     return { response: jsonResponse({ success: false, message: "Request contains invalid JSON." }, 400) };
+  }
+}
+
+async function handleStripePaymentConfig(request, env) {
+  const corsHeaders = evidenceLaneCorsHeaders(request, env);
+  if (request.method === "OPTIONS") {
+    if (!isAllowedCheckoutOrigin(request, env)) return new Response(null, { status: 403 });
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  if (request.method !== "GET") {
+    return jsonResponse(
+      { success: false, message: "Method not allowed." },
+      405,
+      { ...corsHeaders, Allow: "GET, OPTIONS" },
+    );
+  }
+  if (!isAllowedCheckoutOrigin(request, env)) {
+    return jsonResponse(
+      { success: false, message: "Request origin is not allowed." },
+      403,
+      corsHeaders,
+    );
+  }
+
+  const publishableMode = stripeKeyMode(env.STRIPE_PUBLISHABLE_KEY);
+  const secretMode = stripeKeyMode(env.STRIPE_SECRET_KEY);
+  if (
+    publishableMode === "unknown" ||
+    secretMode === "unknown" ||
+    publishableMode !== secretMode ||
+    !env.SUPABASE_URL ||
+    !env.SUPABASE_SECRET_KEY
+  ) {
+    console.error("Stripe Payment Element is missing matching publishable and secret keys.");
+    return jsonResponse(
+      { success: false, message: "Payment is temporarily unavailable." },
+      503,
+      corsHeaders,
+    );
+  }
+
+  let user;
+  try {
+    user = await authenticateChargebackUser(request, env);
+  } catch (error) {
+    console.error("Chargeback Studio authentication failed", error);
+    return jsonResponse({ success: false, message: "Account verification is temporarily unavailable." }, 503, corsHeaders);
+  }
+  if (!user) {
+    return jsonResponse({ success: false, message: "Sign in before entering payment details." }, 401, corsHeaders);
+  }
+
+  return jsonResponse(
+    {
+      success: true,
+      publishableKey: cleanString(env.STRIPE_PUBLISHABLE_KEY, 255),
+      currency: "usd",
+      livemode: secretMode === "live",
+    },
+    200,
+    corsHeaders,
+  );
+}
+
+async function handleStripePaymentIntent(request, env) {
+  const corsHeaders = evidenceLaneCorsHeaders(request, env);
+  if (request.method === "OPTIONS") {
+    if (!isAllowedCheckoutOrigin(request, env)) return new Response(null, { status: 403 });
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  if (request.method !== "POST") {
+    return jsonResponse(
+      { success: false, message: "Method not allowed." },
+      405,
+      { ...corsHeaders, Allow: "POST, OPTIONS" },
+    );
+  }
+  if (!isAllowedCheckoutOrigin(request, env)) {
+    return jsonResponse(
+      { success: false, message: "Request origin is not allowed." },
+      403,
+      corsHeaders,
+    );
+  }
+
+  const publishableMode = stripeKeyMode(env.STRIPE_PUBLISHABLE_KEY);
+  const secretMode = stripeKeyMode(env.STRIPE_SECRET_KEY);
+  if (
+    publishableMode === "unknown" ||
+    secretMode === "unknown" ||
+    publishableMode !== secretMode ||
+    !env.SUPABASE_URL ||
+    !env.SUPABASE_SECRET_KEY
+  ) {
+    console.error("Stripe PaymentIntent endpoint is missing matching required bindings.");
+    return jsonResponse(
+      { success: false, message: "Payment is temporarily unavailable." },
+      503,
+      corsHeaders,
+    );
+  }
+
+  let user;
+  try {
+    user = await authenticateChargebackUser(request, env);
+  } catch (error) {
+    console.error("Chargeback Studio authentication failed", error);
+    return jsonResponse({ success: false, message: "Account verification is temporarily unavailable." }, 503, corsHeaders);
+  }
+  if (!user) {
+    return jsonResponse({ success: false, message: "Sign in before entering payment details." }, 401, corsHeaders);
+  }
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Payment details are invalid." }, 400, corsHeaders);
+  }
+
+  const packId = cleanString(payload?.pack_id || payload?.batch_id, 80);
+  const requestedTierCode = cleanString(payload?.tier, 30);
+  const requestedCaseCount = Number(payload?.case_count);
+  const requestedFileCount = Number(payload?.file_count);
+  const billingAddress = normalizeBillingAddress(payload?.billing_address);
+  const billingName = cleanString(payload?.billing_name, 160);
+  if (!/^[0-9a-f-]{36}$/i.test(packId)) {
+    return jsonResponse({ success: false, message: "Payment details are invalid." }, 400, corsHeaders);
+  }
+  if (!billingAddress) {
+    return jsonResponse({ success: false, message: "Enter a complete billing address." }, 400, corsHeaders);
+  }
+
+  let packContext;
+  try {
+    packContext = await getChargebackPackContext(packId, user.id, env);
+  } catch (error) {
+    console.error("Chargeback Studio pack validation failed", error);
+    return jsonResponse({ success: false, message: "The response pack could not be verified." }, 503, corsHeaders);
+  }
+  if (!packContext) {
+    return jsonResponse({ success: false, message: "Response pack not found." }, 404, corsHeaders);
+  }
+  if (packContext.pack.status === "unlocked") {
+    return jsonResponse({ success: false, message: "This response pack is already unlocked." }, 409, corsHeaders);
+  }
+
+  const caseCount = Math.max(
+    packContext.caseCount,
+    Number.isInteger(requestedCaseCount) && requestedCaseCount >= 0 ? requestedCaseCount : 0,
+  );
+  const fileCount = Math.max(
+    packContext.fileCount,
+    Number.isInteger(requestedFileCount) && requestedFileCount >= 0 ? requestedFileCount : 0,
+  );
+  const minimumTier = resolveEvidenceLaneTier(caseCount, fileCount);
+  if (!minimumTier) {
+    return jsonResponse(
+      { success: false, message: "This volume requires a Chargeback Studio subscription." },
+      422,
+      corsHeaders,
+    );
+  }
+  const requestedTier = Object.hasOwn(EVIDENCELANE_TIERS, requestedTierCode)
+    ? EVIDENCELANE_TIERS[requestedTierCode]
+    : null;
+  const tier = requestedTier && caseCount <= requestedTier.maxCases && fileCount <= requestedTier.maxFiles
+    ? requestedTier
+    : minimumTier;
+
+  const previousPaymentIntentId = cleanString(packContext.pack.stripe_payment_intent_id, 255);
+  let existingPaymentIntent = null;
+  if (previousPaymentIntentId) {
+    try {
+      existingPaymentIntent = await stripeApiGet(
+        `/payment_intents/${encodeURIComponent(previousPaymentIntentId)}`,
+        env,
+      );
+      if (
+        existingPaymentIntent?.object === "payment_intent" &&
+        existingPaymentIntent.status === "succeeded" &&
+        cleanString(existingPaymentIntent.metadata?.pack_id, 80) === packId &&
+        cleanString(existingPaymentIntent.metadata?.user_id, 80) === user.id
+      ) {
+        await updateChargebackPack(packId, {
+          status: "unlocked",
+          tier_code: cleanString(existingPaymentIntent.metadata?.tier_code, 30) || tier.code,
+          case_count: caseCount,
+          file_count: fileCount,
+          stripe_payment_intent_id: existingPaymentIntent.id,
+          unlocked_at: new Date().toISOString(),
+        }, env);
+        return jsonResponse(
+          { success: false, message: "This response pack is already unlocked." },
+          409,
+          corsHeaders,
+        );
+      }
+      if (["processing", "requires_action", "requires_capture"].includes(existingPaymentIntent?.status)) {
+        return jsonResponse(
+          { success: false, message: "This payment is already being processed." },
+          409,
+          corsHeaders,
+        );
+      }
+    } catch (error) {
+      console.warn("Existing Chargeback Studio PaymentIntent could not be reused", error);
+      existingPaymentIntent = null;
+    }
+  }
+
+  const addressFingerprint = await sha256Hex(JSON.stringify(billingAddress));
+  const attemptSeed = existingPaymentIntent?.status === "canceled"
+    ? existingPaymentIntent.id
+    : "initial";
+  const requestFingerprint = await sha256Hex(
+    `${packId}:${tier.code}:${caseCount}:${fileCount}:${addressFingerprint}:${attemptSeed}`,
+  );
+  const orderReference = `CS-${packId.slice(0, 8)}-${requestFingerprint.slice(0, 10)}`.toUpperCase();
+  const taxParameters = new URLSearchParams({
+    currency: "usd",
+    "line_items[0][amount]": String(tier.amount),
+    "line_items[0][reference]": orderReference,
+    "line_items[0][tax_behavior]": "exclusive",
+    "customer_details[address][postal_code]": billingAddress.postalCode,
+    "customer_details[address][country]": billingAddress.country,
+    "customer_details[address_source]": "billing",
+  });
+  if (billingAddress.line1) taxParameters.set("customer_details[address][line1]", billingAddress.line1);
+  if (billingAddress.line2) taxParameters.set("customer_details[address][line2]", billingAddress.line2);
+  if (billingAddress.city) taxParameters.set("customer_details[address][city]", billingAddress.city);
+  if (billingAddress.state) taxParameters.set("customer_details[address][state]", billingAddress.state);
+  const taxCode = cleanString(env.STRIPE_CHARGEBACK_TAX_CODE, 40);
+  if (taxCode) taxParameters.set("line_items[0][tax_code]", taxCode);
+
+  let taxCalculation;
+  try {
+    taxCalculation = await stripeApiRequest(
+      "/tax/calculations",
+      taxParameters,
+      `chargeback-tax-${requestFingerprint}`,
+      env,
+    );
+  } catch (error) {
+    console.error("Chargeback Studio tax calculation failed", error);
+    const message = error?.stripeCode === "customer_tax_location_invalid"
+      ? "Stripe could not verify that billing address. Check it and try again."
+      : "Tax calculation is temporarily unavailable.";
+    return jsonResponse({ success: false, message }, 503, corsHeaders);
+  }
+
+  if (!Number.isInteger(taxCalculation?.amount_total) || taxCalculation.amount_total < tier.amount) {
+    console.error("Stripe returned an invalid Chargeback Studio tax total.");
+    return jsonResponse({ success: false, message: "Tax calculation is temporarily unavailable." }, 503, corsHeaders);
+  }
+
+  const paymentParameters = new URLSearchParams({
+    amount: String(taxCalculation.amount_total),
+    receipt_email: cleanString(user.email, 254),
+    description: `Chargeback Studio — ${tier.label} response pack`,
+    "hooks[inputs][tax][calculation]": cleanString(taxCalculation.id, 255),
+    "metadata[offer_code]": tier.offerCode,
+    "metadata[tier_code]": tier.code,
+    "metadata[order_reference]": orderReference,
+    "metadata[batch_id]": packId,
+    "metadata[pack_id]": packId,
+    "metadata[organization_id]": packContext.pack.organization_id,
+    "metadata[user_id]": user.id,
+    "metadata[case_count]": String(caseCount),
+    "metadata[file_count]": String(fileCount),
+    "metadata[amount_subtotal]": String(tier.amount),
+    "metadata[amount_tax]": String(taxCalculation.tax_amount_exclusive || 0),
+    "metadata[tax_calculation_id]": cleanString(taxCalculation.id, 255),
+    "metadata[address_fingerprint]": addressFingerprint,
+    "metadata[customer_email]": cleanString(user.email, 254),
+  });
+  if (billingName) paymentParameters.set("metadata[billing_name]", billingName);
+
+  try {
+    let paymentIntent;
+    if (
+      existingPaymentIntent?.object === "payment_intent" &&
+      ["requires_payment_method", "requires_confirmation"].includes(existingPaymentIntent.status)
+    ) {
+      paymentIntent = await stripeApiRequest(
+        `/payment_intents/${encodeURIComponent(existingPaymentIntent.id)}`,
+        paymentParameters,
+        `chargeback-payment-update-${existingPaymentIntent.id}-${requestFingerprint}`,
+        env,
+      );
+    } else {
+      paymentParameters.set("currency", "usd");
+      paymentParameters.set("automatic_payment_methods[enabled]", "true");
+      paymentIntent = await stripeApiRequest(
+        "/payment_intents",
+        paymentParameters,
+        `chargeback-payment-create-${requestFingerprint}`,
+        env,
+      );
+    }
+    if (!paymentIntent?.id || !paymentIntent?.client_secret) {
+      throw new Error("Stripe did not return a usable PaymentIntent.");
+    }
+    if ((paymentIntent.livemode === true) !== (secretMode === "live")) {
+      throw new Error("Stripe key modes do not match the PaymentIntent mode.");
+    }
+    await updateChargebackPack(packId, {
+      status: "payment_pending",
+      tier_code: tier.code,
+      case_count: caseCount,
+      file_count: fileCount,
+      stripe_checkout_session_id: null,
+      stripe_payment_intent_id: paymentIntent.id,
+    }, env);
+    return jsonResponse(
+      {
+        success: true,
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+        amountSubtotal: tier.amount,
+        amountTax: Number(taxCalculation.tax_amount_exclusive || 0),
+        amountTotal: taxCalculation.amount_total,
+        currency: "usd",
+        livemode: paymentIntent.livemode === true,
+      },
+      200,
+      corsHeaders,
+    );
+  } catch (error) {
+    console.error("Chargeback Studio PaymentIntent creation failed", error);
+    return jsonResponse({ success: false, message: "Payment is temporarily unavailable." }, 503, corsHeaders);
+  }
+}
+
+async function handleStripeEntitlement(request, env) {
+  const corsHeaders = evidenceLaneCorsHeaders(request, env);
+  if (request.method === "OPTIONS") {
+    if (!isAllowedCheckoutOrigin(request, env)) return new Response(null, { status: 403 });
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  if (request.method !== "GET") {
+    return jsonResponse(
+      { success: false, message: "Method not allowed." },
+      405,
+      { ...corsHeaders, Allow: "GET, OPTIONS" },
+    );
+  }
+  if (!isAllowedCheckoutOrigin(request, env)) {
+    return jsonResponse(
+      { success: false, message: "Request origin is not allowed." },
+      403,
+      corsHeaders,
+    );
+  }
+  if (!env.STRIPE_SECRET_KEY || !evidenceLaneOrigin(env)) {
+    return jsonResponse(
+      { success: false, message: "Payment verification is temporarily unavailable." },
+      503,
+      corsHeaders,
+    );
+  }
+
+  let user;
+  try {
+    user = await authenticateChargebackUser(request, env);
+  } catch (error) {
+    console.error("Chargeback Studio entitlement authentication failed", error);
+    return jsonResponse(
+      { success: false, message: "Account verification is temporarily unavailable." },
+      503,
+      corsHeaders,
+    );
+  }
+  if (!user) {
+    return jsonResponse(
+      { success: false, message: "Sign in to verify this purchase." },
+      401,
+      corsHeaders,
+    );
+  }
+
+  const requestUrl = new URL(request.url);
+  const paymentIntentId = cleanString(requestUrl.searchParams.get("payment_intent_id"), 255);
+  const sessionId = cleanString(requestUrl.searchParams.get("session_id"), 255);
+  const usesPaymentIntent = /^pi_[A-Za-z0-9_]+$/.test(paymentIntentId);
+  const usesLegacySession = /^cs_(test_|live_)?[A-Za-z0-9_]+$/.test(sessionId);
+  if (!usesPaymentIntent && !usesLegacySession) {
+    return jsonResponse(
+      { success: false, message: "Payment reference is invalid." },
+      400,
+      corsHeaders,
+    );
+  }
+
+  try {
+    const paymentObject = await stripeApiGet(
+      usesPaymentIntent
+        ? `/payment_intents/${encodeURIComponent(paymentIntentId)}`
+        : `/checkout/sessions/${encodeURIComponent(sessionId)}`,
+      env,
+    );
+    const tier = evidenceLaneTierFromOfferCode(
+      cleanString(paymentObject.metadata?.offer_code, 80),
+    );
+    const batchId = cleanString(paymentObject.metadata?.batch_id, 80);
+    const packId = cleanString(paymentObject.metadata?.pack_id || batchId, 80);
+    const purchaserId = cleanString(paymentObject.metadata?.user_id, 80);
+    if (!tier || !/^[0-9a-f-]{36}$/i.test(packId) || purchaserId !== user.id) {
+      return jsonResponse(
+        { success: false, message: "Payment is not available to this account." },
+        404,
+        corsHeaders,
+      );
+    }
+
+    const packContext = await getChargebackPackContext(packId, user.id, env);
+    if (!packContext || packContext.pack.organization_id !== paymentObject.metadata?.organization_id) {
+      return jsonResponse(
+        { success: false, message: "Response pack not found." },
+        404,
+        corsHeaders,
+      );
+    }
+
+    const unlocked = usesPaymentIntent
+      ? paymentObject.status === "succeeded"
+      : paymentObject.status === "complete" && paymentObject.payment_status === "paid";
+    if (unlocked) {
+      const packUpdate = {
+        status: "unlocked",
+        tier_code: tier.code,
+        case_count: packContext.caseCount,
+        file_count: packContext.fileCount,
+        unlocked_at: new Date().toISOString(),
+      };
+      if (usesPaymentIntent) {
+        packUpdate.stripe_payment_intent_id = paymentObject.id;
+      } else {
+        packUpdate.stripe_checkout_session_id = paymentObject.id;
+      }
+      await updateChargebackPack(packId, packUpdate, env);
+    }
+    return jsonResponse(
+      {
+        success: true,
+        unlocked,
+        batchId: packId,
+        packId,
+        tierCode: tier.code,
+        tierLabel: tier.label,
+        maxCases: tier.maxCases,
+        maxFiles: tier.maxFiles,
+        orderReference: cleanString(
+          paymentObject.metadata?.order_reference || paymentObject.client_reference_id,
+          80,
+        ),
+        paymentIntentId: usesPaymentIntent ? paymentObject.id : null,
+      },
+      unlocked ? 200 : 409,
+      corsHeaders,
+    );
+  } catch (error) {
+    console.error("Chargeback Studio entitlement verification failed", error);
+    return jsonResponse(
+      { success: false, message: "Payment could not be verified." },
+      503,
+      corsHeaders,
+    );
+  }
+}
+
+async function handleStripeWebhook(request, env) {
+  if (request.method !== "POST") {
+    return jsonResponse(
+      { success: false, message: "Method not allowed." },
+      405,
+      { Allow: "POST" },
+    );
+  }
+
+  const requiredBindings = [
+    "STRIPE_WEBHOOK_SECRET",
+    "SUPABASE_URL",
+    "SUPABASE_SECRET_KEY",
+    "RESEND_API_KEY",
+    "EVIDENCELANE_ORIGIN",
+  ];
+  if (requiredBindings.some((binding) => !env[binding])) {
+    console.error("Stripe webhook endpoint is missing required bindings.");
+    return jsonResponse({ success: false }, 503);
+  }
+
+  const declaredLength = Number(request.headers.get("Content-Length") || 0);
+  if (declaredLength > 1_000_000) {
+    return jsonResponse({ success: false }, 413);
+  }
+
+  const rawBody = await request.text();
+  if (rawBody.length > 1_000_000) {
+    return jsonResponse({ success: false }, 413);
+  }
+
+  const verified = await verifyStripeSignature(
+    rawBody,
+    request.headers.get("Stripe-Signature"),
+    env.STRIPE_WEBHOOK_SECRET,
+  );
+  if (!verified) {
+    return jsonResponse({ success: false }, 400);
+  }
+
+  let event;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return jsonResponse({ success: false }, 400);
+  }
+
+  if (isRevenueLeakStripeEvent(event)) {
+    try {
+      await fulfillRevenueLeakStripeEvent(event, env);
+      return jsonResponse({ received: true });
+    } catch (error) {
+      console.error("Revenue Leak Finder Stripe webhook processing failed", error);
+      return jsonResponse({ success: false }, 500);
+    }
+  }
+
+  if (isBidLensStripeEvent(event)) {
+    try {
+      await fulfillBidLensStripeEvent(event, env);
+      return jsonResponse({ received: true });
+    } catch (error) {
+      console.error("BidLens Stripe webhook processing failed", error);
+      return jsonResponse({ success: false }, 500);
+    }
+  }
+
+  if (isScopeFenceStripeEvent(event)) {
+    try {
+      await fulfillScopeFenceStripeEvent(event, env);
+      return jsonResponse({ received: true });
+    } catch (error) {
+      console.error("ScopeFence Stripe webhook processing failed", error);
+      return jsonResponse({ success: false }, 500);
+    }
+  }
+
+  if (!event?.id || !event?.type || !EVIDENCELANE_STRIPE_EVENTS.has(event.type)) {
+    return jsonResponse({ received: true });
+  }
+
+  const paymentObject = event.data?.object;
+  if (
+    !["checkout.session", "payment_intent"].includes(paymentObject?.object) ||
+    !EVIDENCELANE_OFFER_CODES.has(paymentObject.metadata?.offer_code)
+  ) {
+    return jsonResponse({ received: true });
+  }
+
+  try {
+    if (await hasProcessedStripeEvent(event.id, env)) {
+      return jsonResponse({ received: true, duplicate: true });
+    }
+
+    const order = await upsertEvidenceLaneOrder(paymentObject, event.type, env);
+    const paid = paymentObject.object === "payment_intent"
+      ? paymentObject.status === "succeeded"
+      : paymentObject.payment_status === "paid";
+    if (paid) {
+      const packId = cleanString(
+        paymentObject.metadata?.pack_id || paymentObject.metadata?.batch_id,
+        80,
+      );
+      if (/^[0-9a-f-]{36}$/i.test(packId)) {
+        const packUpdate = {
+          status: "unlocked",
+          tier_code: cleanString(paymentObject.metadata?.tier_code, 30),
+          case_count: Number(paymentObject.metadata?.case_count),
+          file_count: Number(paymentObject.metadata?.file_count),
+          unlocked_at: new Date().toISOString(),
+        };
+        if (paymentObject.object === "payment_intent") {
+          packUpdate.stripe_checkout_session_id = null;
+          packUpdate.stripe_payment_intent_id = paymentObject.id;
+        } else {
+          packUpdate.stripe_checkout_session_id = paymentObject.id;
+        }
+        await updateChargebackPack(packId, packUpdate, env);
+      }
+      const notifications = [
+        sendResendEmail(
+          buildEvidenceLaneAdminEmail(order),
+          `chargeback-studio-admin-${paymentObject.id}`,
+          env,
+        ),
+      ];
+      if (order.customer_email) {
+        notifications.push(
+          sendResendEmail(
+            buildEvidenceLaneCustomerEmail(order, env),
+            `chargeback-studio-customer-${paymentObject.id}`,
+            env,
+          ),
+        );
+      }
+      await Promise.all(notifications);
+    }
+
+    await insertStripeWebhookEvent(event, paymentObject.id, env);
+    return jsonResponse({ received: true });
+  } catch (error) {
+    console.error("Stripe webhook processing failed", error);
+    return jsonResponse({ success: false }, 500);
   }
 }
 
@@ -1101,9 +2276,16 @@ async function handleAdminApi(request, env, url) {
   return jsonResponse({ success: false, message: "Admin API route not found." }, 404);
 }
 
-export default {
-  async fetch(request, env) {
+async function routeRequest(request, env) {
     const url = new URL(request.url);
+
+    if (
+      url.pathname === "/projects/evidencelane" ||
+      url.pathname === "/projects/evidencelane/"
+    ) {
+      url.pathname = "/projects/chargeback-studio/";
+      return Response.redirect(url.toString(), 308);
+    }
 
     if (url.pathname === "/api/health") {
       if (request.method !== "GET") {
@@ -1118,15 +2300,56 @@ export default {
         service: "intelligent-decisions-web",
         worker: "active",
         supabaseUrlConfigured: Boolean(env.SUPABASE_URL),
+        supabasePublishableKeyConfigured: Boolean(env.SUPABASE_PUBLISHABLE_KEY),
         supabaseSecretConfigured: Boolean(env.SUPABASE_SECRET_KEY),
         resendConfigured: Boolean(env.RESEND_API_KEY),
         turnstileConfigured: Boolean(env.TURNSTILE_SECRET_KEY),
+        stripePublishableKeyConfigured: Boolean(env.STRIPE_PUBLISHABLE_KEY),
+        stripeSecretKeyConfigured: Boolean(env.STRIPE_SECRET_KEY),
+        openAiConfigured: Boolean(env.OPENAI_API_KEY),
+        bidLensWebhookConfigured: Boolean(env.BIDLENS_STRIPE_WEBHOOK_SECRET || env.STRIPE_WEBHOOK_SECRET),
+        scopeFenceWebhookConfigured: Boolean(env.SCOPEFENCE_STRIPE_WEBHOOK_SECRET || env.STRIPE_WEBHOOK_SECRET),
         betaInviteConfigured: Boolean(env.BETA_INVITE_URL),
       });
     }
 
     if (url.pathname === "/api/beta-access") {
       return handleBetaAccess(request, env);
+    }
+
+    if (url.pathname.startsWith("/api/revenue-leak-finder/")) {
+      return handleRevenueLeakApi(request, env, url);
+    }
+
+    if (url.pathname.startsWith("/api/bidlens/")) {
+      return handleBidLensApi(request, env, url);
+    }
+
+    if (url.pathname.startsWith("/api/scopefence/")) {
+      return handleScopeFenceApi(request, env, url);
+    }
+
+    if (url.pathname === "/api/stripe/payment-config") {
+      return handleStripePaymentConfig(request, env);
+    }
+
+    if (url.pathname === "/api/stripe/payment-intent") {
+      return handleStripePaymentIntent(request, env);
+    }
+
+    if (url.pathname === "/api/stripe/checkout-session") {
+      return jsonResponse(
+        { success: false, message: "Hosted checkout has been retired." },
+        410,
+      );
+    }
+
+    if (url.pathname === "/api/stripe/entitlement") {
+      return handleStripeEntitlement(request, env);
+    }
+
+    if (url.pathname === "/api/stripe/webhook") {
+      return handleStripeWebhook(request, env);
     }
 
     if (url.pathname.startsWith("/admin/api/")) {
@@ -1138,5 +2361,71 @@ export default {
     }
 
     return env.ASSETS.fetch(request);
+}
+
+function contentSecurityPolicy(requestUrl) {
+  const scriptSources = ["'self'", "https://challenges.cloudflare.com"];
+  const imageSources = ["'self'", "data:"];
+  const connectSources = ["'self'", "https://challenges.cloudflare.com"];
+  const frameSources = ["https://challenges.cloudflare.com"];
+
+  if (requestUrl.pathname.startsWith("/projects/chargeback-studio/")) {
+    scriptSources.push(
+      "https://js.stripe.com",
+      "https://*.js.stripe.com",
+      CHARGEBACK_JSON_LD_HASH,
+    );
+    imageSources.push("blob:", "https://*.stripe.com");
+    connectSources.push(
+      SUPABASE_BROWSER_ORIGIN,
+      SUPABASE_BROWSER_SOCKET_ORIGIN,
+      "https://api.stripe.com",
+    );
+    frameSources.push(
+      "https://js.stripe.com",
+      "https://*.js.stripe.com",
+      "https://hooks.stripe.com",
+    );
+  }
+
+  if (requestUrl.pathname.startsWith("/insights/shopify-chargeback-evidence-packet/")) {
+    scriptSources.push(INSIGHT_JSON_LD_HASH);
+  }
+
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'self'",
+    `script-src ${scriptSources.join(" ")}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    `img-src ${imageSources.join(" ")}`,
+    "font-src 'self' https://fonts.gstatic.com",
+    `connect-src ${connectSources.join(" ")}`,
+    `frame-src ${frameSources.join(" ")}`,
+    "form-action 'self'",
+  ].join("; ");
+}
+
+function secureResponse(response, requestUrl) {
+  const headers = new Headers(response.headers);
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(self)");
+  headers.set("X-Frame-Options", "SAMEORIGIN");
+  headers.set("Content-Security-Policy", contentSecurityPolicy(requestUrl));
+  if (requestUrl.protocol === "https:") headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.protocol !== "https:" || url.hostname === "www.intelligentdecisions.io") {
+      url.protocol = "https:";
+      url.hostname = "intelligentdecisions.io";
+      return Response.redirect(url.toString(), 308);
+    }
+    return secureResponse(await routeRequest(request, env), url);
   },
 };

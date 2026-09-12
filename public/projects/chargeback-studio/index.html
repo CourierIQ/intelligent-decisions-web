@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#081420" />
+    <meta name="description" content="Turn scattered chargeback evidence into a clear, processor-ready response pack. Preview free and unlock the clean export from $29." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Chargeback Response Pack Builder | Chargeback Studio" />
+    <meta property="og:description" content="Organize chargeback evidence, check readiness, and preview the response pack free. Unlock clean exports from $29." />
+    <meta property="og:url" content="https://intelligentdecisions.io/projects/chargeback-studio/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Chargeback Response Pack Builder | Chargeback Studio" />
+    <meta name="twitter:description" content="Turn scattered chargeback evidence into one clear response pack. Preview free; unlock from $29." />
+    <link rel="canonical" href="https://intelligentdecisions.io/projects/chargeback-studio/" />
+    <title>Chargeback Response Pack Builder | Chargeback Studio</title>
+    <link rel="icon" href="/images/adbridge-mark.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./workspace.css" />
+    <script src="https://js.stripe.com/clover/stripe.js" defer></script>
+    <script src="./supabase.js" defer></script>
+    <script src="./workspace.js" defer></script>
+    <script src="./app.js" defer></script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Chargeback Studio","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://intelligentdecisions.io/projects/chargeback-studio/","description":"A self-serve workspace for organizing merchant-provided chargeback evidence into processor-ready response packs while tracking deadlines and recovery.","offers":[{"@type":"Offer","name":"Starter response pack","price":"29","priceCurrency":"USD"},{"@type":"Offer","name":"Growth response pack","price":"49","priceCurrency":"USD"},{"@type":"Offer","name":"Volume response pack","price":"79","priceCurrency":"USD"}]}</script>
+  </head>
+  <body class="workspace-body">
+    <a class="skip-link" href="#workspace-main">Skip to workspace</a>
+    <section class="launch-screen" id="launch-screen" aria-live="polite"><span class="launch-mark" aria-hidden="true"><i></i><i></i><i></i></span><strong>Chargeback Studio</strong><span>Opening your workspace…</span></section>
+
+    <main class="auth-shell" id="auth-shell" hidden>
+      <section class="auth-story">
+        <a class="workspace-brand" href="#" aria-label="Chargeback Studio home"><span class="workspace-brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Chargeback Studio</span></a>
+        <div class="auth-story-copy">
+          <p class="workspace-eyebrow">Chargeback response packs</p>
+          <h1>Make your evidence easy to follow.<br /><em>Before the deadline.</em></h1>
+          <p class="auth-pitch">Turn order records, delivery proof, customer messages, and store policies into one clear, processor-ready response pack. Check readiness and preview the organized pack free. Pay only when you are ready to export.</p>
+          <div class="auth-offer" aria-label="Response pack pricing"><span><strong>$29</strong> up to 20 files</span><span><strong>$49</strong> up to 50</span><span><strong>$79</strong> up to 100</span></div>
+          <p class="auth-trust">Works with the dispute portal you already use. No subscription through 100 files. No percentage of recovered revenue.</p>
+          <div class="auth-actions"><button type="button" class="auth-start" data-auth-cta>Build a free preview <b aria-hidden="true">→</b></button><a class="auth-sample" href="./sample-response-pack.pdf" target="_blank" rel="noopener">View a sample response pack</a><a class="auth-sample" href="/insights/shopify-chargeback-evidence-packet/">Read the evidence checklist</a></div>
+        </div>
+        <div class="auth-proof" aria-label="Product workflow"><span>Check</span><i></i><span>Build</span><i></i><span>Preview</span><i></i><span>Export</span></div>
+      </section>
+      <section class="auth-panel" id="account" aria-labelledby="auth-title">
+        <div class="auth-tabs" role="tablist" aria-label="Account options"><button type="button" role="tab" aria-selected="true" data-auth-mode="signin">Sign in</button><button type="button" role="tab" aria-selected="false" data-auth-mode="signup">Create account</button></div>
+        <div><p class="workspace-eyebrow" id="auth-kicker">Welcome back</p><h2 id="auth-title">Open your workspace</h2><p class="auth-intro" id="auth-intro">Your disputes, packs, deadlines, and recovery totals are waiting.</p></div>
+        <form id="auth-form" class="auth-form">
+          <label class="account-field signup-only" hidden><span>Your name</span><input type="text" name="display_name" autocomplete="name" maxlength="120" /></label>
+          <label class="account-field signup-only" hidden><span>Business name</span><input type="text" name="business_name" autocomplete="organization" maxlength="120" /></label>
+          <label class="account-field"><span>Work email</span><input type="email" name="email" autocomplete="email" required /></label>
+          <label class="account-field"><span>Password</span><input type="password" name="password" autocomplete="current-password" minlength="8" required /></label>
+          <button class="account-submit" type="submit"><span>Sign in</span><b aria-hidden="true">→</b></button><p class="auth-message" id="auth-message" role="status"></p>
+        </form>
+        <p class="auth-boundary">Chargeback Studio organizes merchant-provided information. Banks and processors decide dispute outcomes. It does not provide legal advice or guarantee recovery.</p>
+      </section>
+    </main>
+
+    <div class="workspace-shell" id="workspace-shell" hidden>
+      <aside class="workspace-sidebar">
+        <a class="workspace-brand" href="#dashboard" aria-label="Chargeback Studio dashboard"><span class="workspace-brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Chargeback Studio</span></a>
+        <nav class="workspace-nav" aria-label="Workspace navigation">
+          <button class="is-active" type="button" data-view="dashboard"><span class="nav-icon">⌂</span>Dashboard</button>
+          <button type="button" data-view="disputes"><span class="nav-icon">≡</span>Disputes <b id="nav-active-count">0</b></button>
+          <button type="button" data-view="packs"><span class="nav-icon">▱</span>Response packs</button>
+          <button type="button" data-view="builder"><span class="nav-icon">＋</span>Pack builder</button>
+        </nav>
+        <div class="workspace-sidebar-foot"><div class="account-avatar" id="account-avatar">CS</div><div><strong id="account-name">Workspace</strong><span id="account-email"></span></div><button type="button" id="sign-out" aria-label="Sign out">↗</button></div>
+      </aside>
+
+      <div class="workspace-stage">
+        <header class="workspace-topbar"><button class="mobile-menu" id="mobile-menu" type="button" aria-label="Toggle navigation">☰</button><div><p id="organization-name">My business</p><span id="workspace-date"></span></div><button class="primary-action" type="button" data-new-dispute>New dispute <span aria-hidden="true">＋</span></button></header>
+        <main id="workspace-main">
+          <section class="workspace-view is-active" data-workspace-view="dashboard" aria-labelledby="dashboard-title">
+            <div class="view-heading"><div><p class="workspace-eyebrow">Recovery command center</p><h1 id="dashboard-title">Dispute overview</h1></div><p>Monitor exposure, deadlines, and confirmed recovery across every case.</p></div>
+            <div class="metric-grid"><article class="metric-card metric-risk"><span>Active disputes</span><strong id="metric-active">0</strong><p id="metric-risk">$0 at risk</p></article><article class="metric-card"><span>Due in 7 days</span><strong id="metric-due">0</strong><p id="metric-overdue">0 overdue</p></article><article class="metric-card metric-recovery"><span>Confirmed recovery</span><strong id="metric-recovered">$0</strong><p id="metric-recovery-rate">0% recovery rate</p></article><article class="metric-card"><span>Completed</span><strong id="metric-completed">0</strong><p id="metric-win-rate">0% win rate</p></article></div>
+            <div class="dashboard-grid">
+              <section class="panel recovery-panel" aria-labelledby="recovery-title"><div class="panel-head"><div><p class="workspace-eyebrow">Six-month view</p><h2 id="recovery-title">Disputed vs. recovered</h2></div><span class="chart-legend"><i></i>Disputed <i></i>Recovered</span></div><div class="recovery-chart" id="recovery-chart" role="img" aria-label="Monthly disputed and recovered values"></div></section>
+              <section class="panel queue-panel" aria-labelledby="queue-title"><div class="panel-head"><div><p class="workspace-eyebrow">Next actions</p><h2 id="queue-title">Deadline queue</h2></div><button type="button" data-view="disputes">View all</button></div><div id="deadline-queue" class="deadline-queue"></div></section>
+            </div>
+            <section class="panel cases-panel" aria-labelledby="active-title"><div class="panel-head"><div><p class="workspace-eyebrow">Open work</p><h2 id="active-title">Active disputes</h2></div><button type="button" data-new-dispute>Add dispute</button></div><div class="table-wrap"><table><thead><tr><th>Case</th><th>Processor</th><th>Amount</th><th>Deadline</th><th>Readiness</th><th>Status</th></tr></thead><tbody id="active-disputes-body"></tbody></table></div></section>
+          </section>
+
+          <section class="workspace-view" data-workspace-view="disputes" aria-labelledby="disputes-title">
+            <div class="view-heading"><div><p class="workspace-eyebrow">Case workspace</p><h1 id="disputes-title">Disputes</h1></div><p>Every open and completed dispute, with its deadline, evidence, and outcome.</p></div>
+            <div class="filter-row"><div class="filter-pills" role="group" aria-label="Filter disputes"><button class="is-active" type="button" data-filter="all">All</button><button type="button" data-filter="active">Active</button><button type="button" data-filter="completed">Completed</button></div><button class="secondary-action" type="button" id="create-pack-from-list">Create response pack</button></div>
+            <section class="panel cases-panel"><div class="table-wrap"><table><thead><tr><th class="check-col"><input type="checkbox" id="select-all-disputes" aria-label="Select all visible disputes" /></th><th>Case</th><th>Processor</th><th>Amount</th><th>Deadline</th><th>Recovery</th><th>Status</th><th></th></tr></thead><tbody id="all-disputes-body"></tbody></table></div><div class="empty-state" id="disputes-empty" hidden><strong>No disputes yet</strong><span>Add the first case to begin tracking deadlines and recovery.</span><button type="button" data-new-dispute>Add your first dispute</button></div></section>
+          </section>
+
+          <section class="workspace-view" data-workspace-view="packs" aria-labelledby="packs-title">
+            <div class="view-heading"><div><p class="workspace-eyebrow">Submission output</p><h1 id="packs-title">Response packs</h1></div><p>Build marked previews for free. Pay only when you are ready to unlock the clean final pack.</p></div>
+            <div class="tier-strip" aria-label="Response pack prices"><span><strong>$29</strong> up to 20 files</span><span><strong>$49</strong> up to 50 files</span><span><strong>$79</strong> up to 100 files</span><span><strong>100+</strong> subscription</span></div>
+            <div class="pack-grid" id="pack-grid"></div><div class="empty-state panel" id="packs-empty" hidden><strong>No response packs yet</strong><span>Select one or more disputes and group them into a submission-ready pack.</span><button type="button" data-view="disputes">Choose disputes</button></div>
+          </section>
+
+          <section class="workspace-view builder-view" data-workspace-view="builder" aria-labelledby="builder-page-title">
+            <div class="view-heading"><div><p class="workspace-eyebrow">Response production</p><h1 id="builder-page-title">Pack builder</h1></div><p>Add facts and evidence, check readiness, preview the marked pack, and unlock the clean output.</p></div>
+            <section class="checkout-status" id="checkout-status" aria-live="polite" hidden></section>
+            <div class="builder-layout">
+              <section class="builder-card" id="case-builder" aria-labelledby="builder-title"><div class="builder-topline"><p>Evidence readiness check</p><span id="step-count">1 <small>of 4</small></span></div><div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div><div class="builder-body" id="wizard-stage" aria-live="polite"></div><footer class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3m-11 0h12v10H6V10Z"/></svg><span><strong>Private workspace.</strong> Evidence files are protected by account-level access controls.</span></footer></section>
+              <aside class="pricing-stack" id="pricing"><div class="pricing-grid" aria-label="Choose a response pack tier"><button class="review-purchase-card" type="button" data-tier-card="single" aria-pressed="false"><p class="review-price"><strong>$29</strong><span>Starter</span></p><p>Multiple disputes · up to 20 files</p></button><button class="review-purchase-card" type="button" data-tier-card="multi" aria-pressed="false"><p class="review-price"><strong>$49</strong><span>Growth</span></p><p>Multiple disputes · up to 50 files</p></button><button class="review-purchase-card" type="button" data-tier-card="volume" aria-pressed="false"><p class="review-price"><strong>$79</strong><span>Volume</span></p><p>Multiple disputes · up to 100 files</p></button></div><div class="batch-checkout-panel" id="batch-checkout-panel" aria-live="polite"><strong>Choose a tier or build your first case.</strong><span>Your readiness score and marked preview are free.</span></div></aside>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="workspace-dialog" id="dispute-dialog"><form method="dialog" class="dialog-card" id="dispute-form"><header><div><p class="workspace-eyebrow">Tracked case</p><h2 id="dispute-dialog-title">New dispute</h2></div><button type="button" data-close-dialog aria-label="Close">×</button></header><input type="hidden" name="id" /><div class="dialog-grid">
+      <label class="account-field"><span>Case reference</span><input name="case_reference" required maxlength="100" placeholder="CB-1042" /></label><label class="account-field"><span>Order reference</span><input name="order_reference" maxlength="100" placeholder="Order #1087" /></label><label class="account-field"><span>Processor</span><input name="processor" required maxlength="100" placeholder="Shopify Payments" /></label><label class="account-field"><span>Dispute reason</span><select name="reason_code" required><option value="unrecognized">Payment not recognized</option><option value="not-received">Product not received</option><option value="not-described">Product not as described</option><option value="duplicate">Duplicate charge</option><option value="other">Other</option></select></label><label class="account-field"><span>Disputed amount</span><input name="amount" type="number" min="0" step="0.01" required placeholder="0.00" /></label><label class="account-field"><span>Currency</span><select name="currency"><option>USD</option><option>CAD</option><option>EUR</option><option>GBP</option><option>AUD</option></select></label><label class="account-field"><span>Received date</span><input name="dispute_received_at" type="date" /></label><label class="account-field"><span>Response deadline</span><input name="response_due_at" type="date" /></label><label class="account-field"><span>Status</span><select name="status"><option value="draft">Draft</option><option value="evidence_needed">Evidence needed</option><option value="ready">Ready</option><option value="submitted">Submitted</option><option value="under_review">Under review</option><option value="won">Won</option><option value="partially_won">Partially won</option><option value="lost">Lost</option><option value="closed">Closed</option></select></label><label class="account-field"><span>Confirmed recovery</span><input name="recovery" type="number" min="0" step="0.01" value="0" /></label><label class="account-field dialog-span"><span>Factual summary</span><textarea name="summary" rows="4" maxlength="10000" placeholder="Describe what happened and the facts that support the response."></textarea></label><label class="account-field dialog-span"><span>Evidence files</span><input name="evidence" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.csv,.docx" /><small>PDF, images, text, CSV, or DOCX · 25 MB each</small></label>
+      </div><footer><button class="secondary-action" type="button" data-close-dialog>Cancel</button><button class="primary-action" type="submit">Save dispute</button></footer><p class="dialog-message" id="dispute-message" role="status"></p></form></dialog>
+    <dialog class="payment-dialog" id="payment-dialog">
+      <form class="payment-card" id="payment-form">
+        <header class="payment-head"><div><p class="workspace-eyebrow">Secure payment</p><h2 id="payment-title">Unlock response pack</h2></div><button type="button" id="close-payment" aria-label="Close payment">×</button></header>
+        <div class="payment-order" id="payment-order"></div>
+        <section class="payment-section" aria-labelledby="billing-title"><h3 id="billing-title">Billing address</h3><div id="address-element"></div></section>
+        <section class="payment-section" aria-labelledby="method-title"><h3 id="method-title">Payment method</h3><div id="payment-element"></div></section>
+        <div class="payment-totals" id="payment-totals" aria-live="polite"></div>
+        <p class="payment-message" id="payment-message" role="status"></p>
+        <footer class="payment-actions"><button class="secondary-action" id="cancel-payment" type="button">Cancel</button><button class="primary-action" id="submit-payment" type="submit">Calculate total</button></footer>
+        <small class="payment-security">Payment details are encrypted and sent directly to Stripe. Intelligent Decisions does not store card numbers.</small>
+      </form>
+    </dialog>
+    <section class="packet-view" id="packet-view" aria-hidden="true"></section><button id="load-demo" type="button" hidden>Load sample</button><span id="year" hidden></span>
+  </body>
+</html>

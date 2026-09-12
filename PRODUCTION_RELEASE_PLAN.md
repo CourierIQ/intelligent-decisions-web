@@ -1,0 +1,235 @@
+# IDI Production Release Plan
+
+Last audited: 2026-09-12
+
+This is the canonical release checklist for the IDI web platform, flagship ADBridge release, CourierIQ product launch, and the four web MVPs. Update it whenever a blocker is resolved, a launch decision changes, or a production check is completed.
+
+## Portfolio map
+
+| Product | Release track | Current state | Target state |
+| --- | --- | --- | --- |
+| ADBridge | Flagship product | Developer and Enterprise products exist in separate repositories; the public website now has a flagship marketing surface | Release-ready Developer distribution and controlled Enterprise Early Access with a clear public product path |
+| CourierIQ | Primary product launch | Beta intake and admin infrastructure are live; invitation delivery is not configured | Controlled production beta with a verified applicant-to-first-sync journey |
+| Chargeback Studio | MVP | Page is deployed, but production authentication and payments are blocked | Authenticated dispute workspace with paid response-pack export |
+| Revenue Leak Finder | MVP | Core implementation is deployed and has no known code blocker | Verified free analysis and paid-credit workflow |
+| BidLens | MVP | UI, account, payment, and analysis code are deployed; AI is not configured | Verified document analysis with grounded outputs and paid credits |
+| ScopeFence | MVP | UI, account, payment, and analysis code are deployed; AI and customer data controls are incomplete | Verified scope analysis with safe storage, deletion, and paid credits |
+
+EvidenceLane is the former name of Chargeback Studio. Historical database and migration identifiers may retain the old name where renaming would create migration risk. Customer-facing references should use Chargeback Studio.
+
+## Release order
+
+1. Stabilize the shared production baseline.
+2. Prepare and release ADBridge as the flagship product.
+3. Release Revenue Leak Finder.
+4. Open the CourierIQ controlled beta.
+5. Release Chargeback Studio.
+6. Release BidLens.
+7. Release ScopeFence.
+
+The order can change for business reasons, but no product bypasses the shared production gates.
+
+## Shared production gates
+
+### P0 — Reproducible source and deployment
+
+- [x] Establish a reviewed, separately staged web/application release baseline for ADBridge and the four MVPs.
+- [x] Add a repository ignore boundary for dependencies, local runtime state, environment files, and machine metadata.
+- [x] Remove previously tracked Wrangler cache and local request metadata from the release boundary without deleting the local files.
+- [x] Generate a dependency lockfile.
+- [x] Include the dependency lockfile in the reviewed web/application release baseline.
+- [x] Confirm the lockfile can recreate dependencies with npm ci, run the tests, and build all production bundles.
+- [ ] Reconcile Supabase migration version names. The previously missing production SQL has been reconstructed locally; fourteen production migrations have SQL-equivalent local counterparts, and two local migrations are not recorded remotely.
+- [ ] Check in the initial CourierIQ and beta-intake schemas so a fresh environment can be recreated from the repository.
+- [ ] Add a staging deployment and require successful checks before production deployment.
+- [ ] Document deployment, environment configuration, rollback, and database-recovery procedures.
+
+### P0 — Domain, routing, and browser security
+
+- [ ] Configure www.intelligentdecisions.io in Cloudflare and route or redirect it to the apex domain. It currently returns HTTP 522.
+- [x] Replace the EvidenceLane HTML meta-refresh with a permanent HTTP 308 redirect to Chargeback Studio, with a clear static fallback for direct asset previews.
+- [x] Repair the production Content Security Policy for Chargeback Studio:
+  - Bundle the pinned Supabase browser client with the application.
+  - Permit only the exact Supabase API and WebSocket origins in connect-src.
+  - Permit the Stripe-documented script, API, image, and frame origins only on the Chargeback Studio route.
+  - Permit blob images only on the Chargeback Studio route for local evidence-file previews.
+- [x] Replace the missing /favicon.svg references in BidLens and ScopeFence with the existing site icon.
+- [ ] Add a repeatable automated browser smoke check that fails on CSP violations, missing assets, or console errors.
+
+### P0 — Security, privacy, and customer controls
+
+- [ ] Publish company privacy, terms, support, and contact pages and link them from every product.
+- [ ] Document product-specific data collection, retention, deletion, and subprocessors.
+- [ ] Provide account deletion and history/data deletion wherever customer data is retained.
+- [ ] Enable Supabase leaked-password protection before opening password-based Chargeback Studio signup.
+- [x] Review the authenticated Chargeback provisioning SECURITY DEFINER function. Its public RPC binds all work to auth.uid(), rejects unauthenticated calls, and grants execution only to authenticated users; the current advisor finding is intentional.
+- [ ] Exercise Chargeback provisioning with a real authenticated staging session before launch.
+- [x] Confirm all 36 public product tables have RLS enabled. Twenty-eight server-only tables intentionally expose no client policies and therefore fail closed outside privileged backend access.
+- [ ] Reduce the public health response to operational status that does not enumerate configured services.
+
+### P0 — Production integrations
+
+- [ ] Create an environment-variable inventory with owner, environment, rotation procedure, and verification status.
+- [ ] Verify Turnstile, Supabase Auth, Resend, Stripe, and OpenAI in staging and production.
+- [ ] Test Stripe webhook signature validation, idempotency, delayed events, failed payments, refunds, and replay/recovery.
+- [ ] Confirm every paid product grants exactly the purchased entitlement and cannot grant it from a browser-only action.
+
+### P1 — Quality and operations
+
+- [ ] Add CI checks for clean install, build, unit tests, type checking/linting, broken links, and missing static assets.
+- [ ] Add desktop and mobile end-to-end tests for each product's primary user journey.
+- [ ] Add accessibility checks for authentication, upload, checkout, report, and export screens.
+- [ ] Configure Cloudflare error monitoring and alerts.
+- [ ] Monitor Supabase database health, authentication failures, storage failures, and backup/recovery readiness.
+- [ ] Monitor Stripe webhook failures and provide an operator replay procedure.
+- [ ] Add a release checklist with smoke tests and an explicit rollback decision point.
+- [ ] Add covering indexes for courieriq_offer_score_components.offer_id and user_id, the two current Supabase performance-advisor findings.
+- [ ] Change homepage product badges so only verified products are labeled Live.
+
+## Product launch gates
+
+### ADBridge — flagship product
+
+- [x] Add a public-safe ADBridge product page covering Developer, Enterprise Early Access, AI integration, security boundaries, architecture, use cases, and edition comparison.
+- [x] Make ADBridge the front-facing flagship product on the IDI homepage.
+- [x] Link ADBridge Developer to its public GitHub repository without exposing Enterprise source.
+- [x] Clearly distinguish the MIT-licensed Developer edition from proprietary Enterprise Early Access.
+- [ ] Review and commit the extensive current changes in both ADBridge repositories as intentional release baselines.
+- [ ] Complete the ADBridge Developer host and Android validation suites from the exact release commit.
+- [ ] Fix the ADBridge Enterprise release validation failure caused by the missing ADBridgeEnterpriseUninstall.cs source file.
+- [ ] Complete the full ADBridge Enterprise validation suite from the exact release commit.
+- [ ] Resolve version alignment across source packages, Android artifacts, release bundles, changelogs, and public messaging.
+- [ ] Complete the Developer public-source and Git-history secret review before changing repository visibility or publishing a release.
+- [ ] Obtain and integrate Authenticode signing for public or paid Enterprise distribution; integrity manifests alone do not establish publisher identity or SmartScreen reputation.
+- [ ] Produce clean, reviewed, traceable Developer and Enterprise release candidates and validate installation, upgrade, rollback, and uninstall on supported Windows and Android configurations.
+- [ ] Define the operational owner and response path for Enterprise Early Access inquiries.
+- [ ] Deploy and smoke-test the ADBridge marketing page on the apex and www hostnames.
+
+Release gate: clean reviewed commits, all prescribed Developer and Enterprise checks passing, signed and traceable distributions, a verified physical-device workflow, and an operational Early Access path.
+
+### Revenue Leak Finder — first MVP candidate
+
+- [x] Core CSV parsing, matching, report, and formula-injection tests pass.
+- [x] The unauthenticated production account endpoint fails closed.
+- [x] Supabase, Turnstile, Stripe secret, and webhook configuration are present.
+- [ ] Complete a clean new-user browser test: Turnstile, email OTP, upload, match, first free report, history, and CSV export.
+- [ ] Complete a Stripe test purchase and confirm the webhook grants the exact credit quantity once.
+- [ ] Test payment cancellation, delayed payment, duplicate webhook delivery, and failed webhook recovery.
+- [ ] Publish product privacy and retention terms.
+- [ ] Add account/history deletion.
+- [ ] Add production funnel and error monitoring.
+
+Release gate: one clean end-to-end free flow, one clean paid flow, published customer terms, and active alerts.
+
+### CourierIQ — controlled product beta
+
+- [x] Public beta intake is deployed and has stored real requests.
+- [x] The admin API is protected by Cloudflare Access.
+- [x] Supabase, Turnstile, and Resend configuration are present.
+- [ ] Configure BETA_INVITE_URL.
+- [ ] Verify applicant submission, admin review, approval, invite email, Google Play access, install, first synchronization, and feedback intake.
+- [ ] Publish beta privacy, retention, deletion, support, and participation terms.
+- [ ] Check in the full database baseline needed to recreate CourierIQ and beta intake.
+- [ ] Document Android build, signing, Play distribution, versioning, rollback, and support ownership outside this web repository.
+- [ ] Add the two recommended foreign-key indexes for courieriq_offer_score_components after validating query plans.
+
+Release gate: a new beta applicant can reach a working installed build without manual database intervention, and the team can support or roll back that build.
+
+### Chargeback Studio
+
+- [x] Workspace, storage, entitlement, payment-intent, and webhook code are present.
+- [x] The evidence storage bucket is private and restricts file size and MIME types.
+- [ ] Fix CSP so Supabase and Stripe load. The deployed login currently displays “The account service could not be loaded.”
+- [ ] Configure STRIPE_PUBLISHABLE_KEY.
+- [ ] Verify account creation, email verification if required, sign-in, sign-out, session recovery, and password reset.
+- [ ] Verify dispute creation, file upload, readiness check, preview, paid export, history, and dispute deletion.
+- [ ] Verify storage cleanup and add retry/reconciliation for orphaned files when database deletion succeeds but storage deletion fails.
+- [ ] Complete Stripe tests for all three pack sizes.
+- [ ] Publish product privacy, retention, deletion, merchant-data, and non-legal-advice terms.
+- [ ] Remove remaining customer-facing EvidenceLane references.
+
+Release gate: no CSP errors, complete auth recovery, one verified export for every price tier, reliable deletion, and published customer terms.
+
+### BidLens
+
+- [x] UI, account, credit, Stripe, analysis, history, and deletion code are present.
+- [x] A product privacy page exists.
+- [x] The analysis request uses the OpenAI Responses API with storage disabled and structured output.
+- [ ] Configure OPENAI_API_KEY and confirm production model access.
+- [ ] Test PDF, DOC, DOCX, RTF, ODT, TXT, and Markdown fixtures at small, large, malformed, and maximum supported sizes.
+- [ ] Build a reviewed golden set for requirements, deadlines, evaluation criteria, ambiguities, and evidence citations.
+- [ ] Define acceptable accuracy, grounding, latency, timeout, and per-analysis cost thresholds.
+- [ ] Verify that failures do not consume credits.
+- [ ] Complete a Stripe credit purchase and duplicate-webhook test.
+- [ ] Expand customer terms for uploaded procurement documents, retention, deletion, and AI processing.
+
+Release gate: the golden set meets its quality thresholds, failures are credit-safe, payments are idempotent, and uploaded source documents are handled according to published terms.
+
+### ScopeFence
+
+- [x] UI, account, workspace, credit, Stripe, analysis, history, and change-order generation code are present.
+- [x] The analysis request uses the OpenAI Responses API with storage disabled and structured output.
+- [ ] Configure OPENAI_API_KEY and confirm production model access.
+- [ ] Add APIs and UI for deleting saved scopes, client requests, analyses, and the account.
+- [ ] Publish a ScopeFence privacy and retention policy before accepting customer agreements.
+- [ ] Decide whether full source agreements must be retained; minimize or make retention opt-in where practical.
+- [ ] Build a reviewed golden set for included, ambiguous, and out-of-scope requests.
+- [ ] Define acceptable classification accuracy, grounding, latency, timeout, and per-analysis cost thresholds.
+- [ ] Verify that failures do not consume credits.
+- [ ] Complete a Stripe credit purchase and duplicate-webhook test.
+
+Release gate: customer data is controllable and deletable, the golden set meets its quality thresholds, failures are credit-safe, and payments are idempotent.
+
+## Historical EvidenceLane cleanup
+
+- [ ] Remove stale links to the previous externally hosted EvidenceLane experience.
+- [ ] Use Chargeback Studio in all customer-facing copy, metadata, navigation, analytics, and support material.
+- [ ] Document legacy EvidenceLane database and migration names so they are not mistaken for a separate active product.
+- [ ] Preserve historical identifiers when renaming them would create unnecessary production migration risk.
+
+## Current production configuration snapshot
+
+Configuration detected as present:
+
+- Supabase URL, publishable key, and server secret
+- Resend
+- Turnstile
+- Stripe secret key
+- BidLens webhook configuration
+- ScopeFence webhook configuration
+
+Configuration detected as missing:
+
+- STRIPE_PUBLISHABLE_KEY
+- OPENAI_API_KEY
+- BETA_INVITE_URL
+
+Never put secret values in this document.
+
+## Verification record
+
+- [x] Sixteen repository tests, including ADBridge marketing, legacy routing, asset, and Chargeback Studio CSP regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
+- [x] Main product pages and compiled product bundles returned HTTP 200.
+- [x] The CourierIQ admin API redirected unauthenticated access to Cloudflare Access.
+- [x] Product account APIs rejected unauthenticated requests.
+- [x] A live browser check reproduced Chargeback Studio's blocked Supabase and Stripe libraries.
+- [x] The www hostname failure was reproduced.
+- [x] All Revenue Leak Finder, BidLens, and ScopeFence browser bundles built successfully after npm ci.
+- [x] Wrangler completed a production Worker and 49-asset dry run without deploying.
+- [x] npm reported zero known dependency vulnerabilities on 2026-09-12.
+- [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
+- [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
+- [ ] No complete browser-level authentication, payment, webhook, email, or AI journey has been verified yet.
+
+## Universal definition of done
+
+A product may be labeled Live only when:
+
+- [ ] Its primary new-user journey succeeds on desktop and mobile.
+- [ ] Authentication recovery and sign-out work.
+- [ ] Payment and entitlement behavior is verified, when applicable.
+- [ ] Customer data can be exported or deleted as promised.
+- [ ] Privacy, terms, support, and retention information are published.
+- [ ] Production errors and integration failures are monitored.
+- [ ] A rollback procedure is documented and usable.
+- [ ] The release commit, database migrations, assets, and deployed version are traceable.

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Reconcile two CSV exports, find likely revenue leaks, and download an evidence-ready exception report." />
+    <meta name="theme-color" content="#f3f6f4" />
+    <meta property="og:title" content="Revenue Leak Finder | Intelligent Decisions" />
+    <meta property="og:description" content="Compare processor revenue with your accounting or CRM export. Find missing payments, mismatched amounts, duplicates, and status drift." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://intelligentdecisions.io/projects/revenue-leak-finder/" />
+    <title>Revenue Leak Finder | Intelligent Decisions</title>
+    <link rel="canonical" href="https://intelligentdecisions.io/projects/revenue-leak-finder/" />
+    <link rel="stylesheet" href="./revenue-leak-finder.css?v=20260912-1" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { margin: 0; background: #f3f6f4; }
+      a, button, input, select { -webkit-tap-highlight-color: transparent; }
+      .studio-monogram {
+        display: inline-grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border: 0;
+        border-radius: 9px;
+        background: #167454;
+        color: #fff;
+        font: 800 0.72rem/1 "Segoe UI", Arial, sans-serif;
+        letter-spacing: .04em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="revenue-leak-app"></div>
+    <script type="module" src="./revenue-leak-finder.js?v=20260912-1"></script>
+  </body>
+</html>

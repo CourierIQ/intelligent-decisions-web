@@ -1,0 +1,18 @@
+* text=auto
+
+# Preserve binary release artifacts byte-for-byte across platforms.
+*.pdf binary
+*.png binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.sqlite binary
+*.sqlite-shm binary
+*.sqlite-wal binary
+
+# Generated bundles can contain intentional whitespace inside template literals.
+public/projects/chargeback-studio/supabase.js -whitespace linguist-generated=true
+public/projects/revenue-leak-finder/revenue-leak-finder.js -whitespace linguist-generated=true
+public/projects/bidlens/bidlens.js -whitespace linguist-generated=true
+public/projects/scopefence/scopefence.js -whitespace linguist-generated=true

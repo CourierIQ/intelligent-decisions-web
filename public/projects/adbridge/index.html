@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="ADBridge securely connects developers, automation, and AI agents to physical Android devices through private, policy-controlled infrastructure."
+  />
+  <meta property="og:title" content="ADBridge — Secure Android hardware execution" />
+  <meta
+    property="og:description"
+    content="Build, deploy, observe, and test authorized Android applications on real hardware without exposing raw ADB or a shell."
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://intelligentdecisions.io/projects/adbridge/" />
+  <meta property="og:image" content="https://intelligentdecisions.io/images/adbridge-mark.png" />
+  <title>ADBridge — Secure Android hardware execution</title>
+  <link rel="canonical" href="https://intelligentdecisions.io/projects/adbridge/" />
+  <link rel="icon" href="/images/adbridge-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/projects/adbridge/adbridge.css" />
+</head>
+<body class="project-page adbridge-page">
+  <a class="adbridge-skip" href="#adbridge-main">Skip to ADBridge</a>
+
+  <header class="site-header">
+    <a href="/" class="logo" aria-label="Intelligent Decisions Interactive home">IDI</a>
+    <nav aria-label="ADBridge navigation">
+      <a href="#product">Product</a>
+      <a href="#developer">Developer</a>
+      <a href="#enterprise">Enterprise</a>
+      <a href="#security">Security</a>
+      <a href="#ai-integration">AI Integration</a>
+    </nav>
+    <a
+      href="mailto:bhall@intelligentdecisions.io?subject=ADBridge%20Enterprise%20Early%20Access"
+      class="nav-cta"
+    >
+      Early Access
+    </a>
+  </header>
+
+  <main id="adbridge-main" class="adbridge-main">
+    <section id="product" class="adbridge-hero">
+      <div class="adbridge-shell adbridge-hero-grid">
+        <div class="adbridge-hero-copy">
+          <div class="adbridge-identity">
+            <img src="/images/adbridge-mark.png" alt="" width="72" height="72" />
+            <div>
+              <p class="adbridge-kicker">IDI Studios · Flagship Product</p>
+              <strong>ADBridge</strong>
+            </div>
+          </div>
+
+          <h1>Build here. Run on real Android hardware anywhere.</h1>
+          <p class="adbridge-lead">
+            ADBridge provides a policy-controlled execution layer for building,
+            installing, observing, and testing Android applications on real devices—
+            without exposing raw ADB or a shell.
+          </p>
+
+          <div class="adbridge-actions">
+            <a
+              class="adbridge-button adbridge-button-primary"
+              href="https://github.com/Intelligent-Decisions-Interactive/ADBridge"
+            >
+              Get ADBridge Developer
+            </a>
+            <a
+              class="adbridge-button adbridge-button-secondary"
+              href="mailto:bhall@intelligentdecisions.io?subject=ADBridge%20Enterprise%20Early%20Access"
+            >
+              Request Enterprise Early Access
+            </a>
+          </div>
+
+          <ul class="adbridge-trust-list" aria-label="ADBridge product highlights">
+            <li>Open-source Developer edition</li>
+            <li>Policy-bound deployment</li>
+            <li>Physical Android hardware</li>
+            <li>Private-network architecture</li>
+            <li>AI-agent ready</li>
+          </ul>
+        </div>
+
+        <div class="adbridge-console" aria-label="Example authorized deployment status">
+          <div class="adbridge-console-top">
+            <span></span><span></span><span></span>
+            <p>AUTHORIZED EXECUTION</p>
+          </div>
+          <div class="adbridge-console-title">
+            <span class="adbridge-live-dot"></span>
+            <div>
+              <small>Physical target</small>
+              <strong>android-lab-03</strong>
+            </div>
+            <em>HEALTHY</em>
+          </div>
+          <ol class="adbridge-status-list">
+            <li class="complete">
+              <span>01</span>
+              <div><strong>Build requested</strong><small>Registered project adapter</small></div>
+              <b>✓</b>
+            </li>
+            <li class="complete">
+              <span>02</span>
+              <div><strong>APK verified</strong><small>Package, signer, policy</small></div>
+              <b>✓</b>
+            </li>
+            <li class="complete">
+              <span>03</span>
+              <div><strong>Installed on device</strong><small>Authorized Android agent</small></div>
+              <b>✓</b>
+            </li>
+            <li class="active">
+              <span>04</span>
+              <div><strong>Test on hardware</strong><small>Bounded UI scenario</small></div>
+              <b></b>
+            </li>
+          </ol>
+          <div class="adbridge-proof">
+            <span>Source-to-device provenance</span>
+            <strong>VERIFIED</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="adbridge-value-strip" aria-label="ADBridge value">
+      <div class="adbridge-shell">
+        <span>CODE</span><i>→</i>
+        <span>BUILD</span><i>→</i>
+        <span>VERIFY</span><i>→</i>
+        <span>INSTALL</span><i>→</i>
+        <span>OBSERVE</span><i>→</i>
+        <span>TEST</span>
+      </div>
+    </section>
+
+    <section class="adbridge-section adbridge-problem">
+      <div class="adbridge-shell adbridge-split">
+        <div>
+          <p class="adbridge-kicker">Complete the development loop</p>
+          <h2>AI can write the application. ADBridge lets it safely reach the device.</h2>
+        </div>
+        <div class="adbridge-copy">
+          <p>
+            Android development still breaks at physical hardware. APK transfer,
+            installation, launch verification, crash detection, and UI testing often
+            require a person next to the device.
+          </p>
+          <p>
+            ADBridge turns an enrolled Windows workstation and its connected Android
+            devices into controlled execution targets. Every operation stays inside
+            explicit identity, package, policy, and device boundaries.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="adbridge-section adbridge-section-raised">
+      <div class="adbridge-shell">
+        <p class="adbridge-kicker">How ADBridge works</p>
+        <h2>From authorized request to durable result.</h2>
+        <div class="adbridge-workflow">
+          <article>
+            <span>01</span>
+            <h3>Route</h3>
+            <p>Send approved work to the correct enrolled workstation and device gateway.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Build</h3>
+            <p>Invoke the Android project's registered adapter—not an arbitrary command.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Verify</h3>
+            <p>Inspect package identity, version, signer, size, and active signed policy.</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>Install</h3>
+            <p>Deliver the verified APK through the authorized ADBridge Android agent.</p>
+          </article>
+          <article>
+            <span>05</span>
+            <h3>Test</h3>
+            <p>Launch, inspect, and exercise the authorized application with finite actions.</p>
+          </article>
+          <article>
+            <span>06</span>
+            <h3>Report</h3>
+            <p>Return bounded diagnostics and verifiable source-to-device provenance.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="adbridge-section" id="developer">
+      <div class="adbridge-shell">
+        <p class="adbridge-kicker">Two editions, one policy boundary</p>
+        <h2>Start independently. Scale with control.</h2>
+        <div class="adbridge-editions">
+          <article class="adbridge-edition-card developer">
+            <div class="adbridge-edition-heading">
+              <p>Open source</p>
+              <h3>ADBridge Developer</h3>
+              <span>Free · MIT licensed</span>
+            </div>
+            <p>
+              A self-hosted deployment platform for individual Android developers
+              working across one private tenant and workstation.
+            </p>
+            <ul>
+              <li>One enrolled workstation workflow</li>
+              <li>Up to five authorized application packages</li>
+              <li>Signed package policy and APK verification</li>
+              <li>Project-owned build adapters</li>
+              <li>Windows workstation and Android agent</li>
+              <li>Package-scoped diagnostics SDK</li>
+            </ul>
+            <a
+              class="adbridge-text-link"
+              href="https://github.com/Intelligent-Decisions-Interactive/ADBridge"
+            >
+              View Developer on GitHub <span aria-hidden="true">→</span>
+            </a>
+          </article>
+
+          <article class="adbridge-edition-card enterprise" id="enterprise">
+            <div class="adbridge-edition-heading">
+              <p>Commercial edition</p>
+              <h3>ADBridge Enterprise</h3>
+              <span>Proprietary · Early Access</span>
+            </div>
+            <p>
+              Fleet coordination and secure physical-device execution for
+              organizations, remote teams, and AI-agent infrastructure.
+            </p>
+            <ul>
+              <li>Multiple enrolled workstation gateways</li>
+              <li>Observer, operator, and administrator roles</li>
+              <li>Explicit agent-to-gateway scope</li>
+              <li>Outbound-only workstation fleet connectivity</li>
+              <li>Bounded device sessions and UI testing</li>
+              <li>Central reports, provenance, and tamper-evident audit</li>
+            </ul>
+            <a
+              class="adbridge-text-link"
+              href="mailto:bhall@intelligentdecisions.io?subject=ADBridge%20Enterprise%20Early%20Access"
+            >
+              Request Enterprise Early Access <span aria-hidden="true">→</span>
+            </a>
+          </article>
+        </div>
+
+        <div class="adbridge-table-wrap" tabindex="0" aria-label="ADBridge edition comparison">
+          <table class="adbridge-comparison">
+            <thead>
+              <tr><th>Capability</th><th>Developer</th><th>Enterprise</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>License</td><td>MIT / open source</td><td>Proprietary</td></tr>
+              <tr><td>Self-hosted</td><td>Yes</td><td>Yes</td></tr>
+              <tr><td>Workstations</td><td>One</td><td>Fleet-oriented</td></tr>
+              <tr><td>Authorized app packages</td><td>Up to five</td><td>Commercial fleet policy</td></tr>
+              <tr><td>Signed package policy</td><td>Yes</td><td>Yes</td></tr>
+              <tr><td>Project build adapters</td><td>Yes</td><td>Yes</td></tr>
+              <tr><td>Native AI-agent management</td><td>Manual / advanced</td><td>Supported</td></tr>
+              <tr><td>Roles and gateway scopes</td><td>—</td><td>Yes</td></tr>
+              <tr><td>Bounded device sessions</td><td>—</td><td>Yes</td></tr>
+              <tr><td>Central deployment reports</td><td>Local workflow</td><td>Yes</td></tr>
+              <tr><td>Private signed updates</td><td>—</td><td>Yes</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="ai-integration" class="adbridge-section adbridge-ai">
+      <div class="adbridge-shell adbridge-split">
+        <div>
+          <p class="adbridge-kicker">AI-agent integration</p>
+          <h2>Typed capabilities. Bounded evidence. No shell.</h2>
+          <p class="adbridge-lead-small">
+            Enterprise gives an authorized agent a constrained tool surface for
+            deployment, inspection, testing, diagnostics, and reports. It does not
+            give the agent unrestricted control of the workstation or phone.
+          </p>
+        </div>
+        <div class="adbridge-loop" aria-label="AI-assisted Android development loop">
+          <div class="adbridge-loop-row">
+            <span>CODE</span><i>→</i><span>BUILD</span><i>→</i><span>VERIFY</span>
+          </div>
+          <div class="adbridge-loop-turn">↓</div>
+          <div class="adbridge-loop-row reverse">
+            <span>REPAIR</span><i>←</i><span>DIAGNOSE</span><i>←</i><span>TEST</span>
+          </div>
+          <p>Repeat under an auditable deployment and test-report chain.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="security" class="adbridge-section adbridge-security">
+      <div class="adbridge-shell">
+        <p class="adbridge-kicker">Security is the product boundary</p>
+        <h2>Powerful enough to complete the loop. Narrow enough to trust.</h2>
+        <div class="adbridge-security-grid">
+          <article>
+            <span>IDENTITY</span>
+            <h3>Explicitly enrolled</h3>
+            <p>Workstations, Android agents, packages, and Enterprise principals are known before work begins.</p>
+          </article>
+          <article>
+            <span>POLICY</span>
+            <h3>Package and signer bound</h3>
+            <p>An APK must match the authorized identity, signer, adapter, version posture, and active policy.</p>
+          </article>
+          <article>
+            <span>NETWORK</span>
+            <h3>Private-network first</h3>
+            <p>Outbound-connected workstations avoid exposing a general-purpose ADB listener or shell publicly.</p>
+          </article>
+          <article>
+            <span>AUTHORITY</span>
+            <h3>Finite device actions</h3>
+            <p>Role-gated, package-bound, time-limited sessions expose only a constrained operation set.</p>
+          </article>
+          <article>
+            <span>EVIDENCE</span>
+            <h3>Package-scoped diagnostics</h3>
+            <p>Bounded application diagnostics replace broad remote access to device-wide Logcat.</p>
+          </article>
+          <article>
+            <span>ACCOUNTABILITY</span>
+            <h3>Verifiable results</h3>
+            <p>Provenance and tamper-evident audit connect each operation to its principal, target, package, and result.</p>
+          </article>
+        </div>
+
+        <blockquote class="adbridge-security-statement">
+          Enterprise does not bypass Developer policy. If the local policy, package
+          signer, registered adapter, workstation enrollment, or Android device
+          rejects an operation, Enterprise cannot override it.
+        </blockquote>
+
+        <div class="adbridge-not-grid">
+          <h3>ADBridge is not</h3>
+          <ul>
+            <li>A public ADB proxy</li>
+            <li>A remote shell</li>
+            <li>Arbitrary APK sideloading</li>
+            <li>Unrestricted device surveillance</li>
+            <li>A generic command runner</li>
+            <li>An iOS deployment platform</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="adbridge-section adbridge-architecture">
+      <div class="adbridge-shell adbridge-split">
+        <div>
+          <p class="adbridge-kicker">Private, policy-controlled architecture</p>
+          <h2>A secure hardware-execution layer between software intelligence and Android devices.</h2>
+          <p class="adbridge-lead-small">
+            Application source stays in its separately authorized development
+            workspace. ADBridge coordinates the verified build and physical-device
+            execution path.
+          </p>
+        </div>
+        <ol class="adbridge-architecture-stack" aria-label="ADBridge high-level architecture">
+          <li><span>01</span>Developer or authorized AI agent</li>
+          <li><span>02</span>Enterprise Fleet Hub</li>
+          <li><span>03</span>Outbound workstation connector</li>
+          <li><span>04</span>Policy and project build adapter</li>
+          <li><span>05</span>Verified Android APK</li>
+          <li><span>06</span>ADBridge Android agent</li>
+          <li><span>07</span>Authorized physical device</li>
+          <li><span>08</span>Deployment, diagnostics, and test result</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="adbridge-section adbridge-section-raised">
+      <div class="adbridge-shell">
+        <p class="adbridge-kicker">Built for real development operations</p>
+        <h2>One platform, several physical-device workflows.</h2>
+        <div class="adbridge-use-cases">
+          <article><h3>Remote Android deployment</h3><p>Build on an enrolled workstation and install on an authorized device over a private network.</p></article>
+          <article><h3>AI-driven development</h3><p>Move from source changes to physical-device evidence through constrained tools.</p></article>
+          <article><h3>Crash detection</h3><p>Classify package-owned fatal diagnostics without broad device-wide log access.</p></article>
+          <article><h3>Physical-device regression</h3><p>Run finite UI scenarios against real Android hardware after deployment.</p></article>
+          <article><h3>Remote device labs</h3><p>Coordinate authorized work across outbound-connected workstation gateways.</p></article>
+          <article><h3>Verifiable deployments</h3><p>Bind a successful install to its source revision, APK identity, policy, and target.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="adbridge-section adbridge-faq">
+      <div class="adbridge-shell adbridge-split">
+        <div>
+          <p class="adbridge-kicker">Frequently asked questions</p>
+          <h2>Clear boundaries by design.</h2>
+        </div>
+        <div class="adbridge-faq-list">
+          <details>
+            <summary>Is ADBridge a replacement for ADB?</summary>
+            <p>ADBridge provides a deliberately narrower deployment and testing surface. It does not expose the full general-purpose authority of raw ADB.</p>
+          </details>
+          <details>
+            <summary>Can an AI agent control my entire Android device?</summary>
+            <p>No. Enterprise tools are role-gated, package-bound, time-limited, and restricted to a finite set of authorized operations.</p>
+          </details>
+          <details>
+            <summary>Can an agent install any APK?</summary>
+            <p>No. The application package, signer, policy, adapter, workstation, and Android agent must all be authorized.</p>
+          </details>
+          <details>
+            <summary>Does ADBridge upload my application source?</summary>
+            <p>No. Source remains in the separately authorized development workspace. ADBridge coordinates the verified build and device-execution workflow.</p>
+          </details>
+          <details>
+            <summary>Is ADBridge Developer free?</summary>
+            <p>Yes. ADBridge Developer is released under the MIT License and supports one private tenant, one workstation workflow, and up to five application packages.</p>
+          </details>
+          <details>
+            <summary>What does Enterprise add?</summary>
+            <p>Enterprise adds fleet coordination, supported AI-agent integration, roles, gateway scopes, secure enrollment, device sessions, centralized reports, auditing, provenance, and private update management.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="adbridge-final-cta">
+      <div class="adbridge-shell">
+        <img src="/images/adbridge-mark.png" alt="" width="72" height="72" />
+        <p class="adbridge-kicker">ADBridge Enterprise · Early Access</p>
+        <h2>Give software intelligence a secure path to physical Android hardware.</h2>
+        <p>
+          Explore the open-source Developer edition today, or talk with IDI about
+          controlled Enterprise Early Access for your team, lab, or agent platform.
+        </p>
+        <div class="adbridge-actions">
+          <a
+            class="adbridge-button adbridge-button-primary"
+            href="https://github.com/Intelligent-Decisions-Interactive/ADBridge"
+          >
+            View ADBridge Developer
+          </a>
+          <a
+            class="adbridge-button adbridge-button-secondary"
+            href="mailto:bhall@intelligentdecisions.io?subject=ADBridge%20Enterprise%20Early%20Access"
+          >
+            Request Early Access
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="adbridge-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>ADBridge</strong>
+        <p>Secure Android hardware execution by IDI Studios.</p>
+      </div>
+      <div class="adbridge-footer-links">
+        <a href="/">Intelligent Decisions</a>
+        <a href="https://github.com/Intelligent-Decisions-Interactive/ADBridge">Developer on GitHub</a>
+        <a href="mailto:bhall@intelligentdecisions.io?subject=ADBridge%20Enterprise%20Early%20Access">Enterprise Early Access</a>
+      </div>
+    </div>
+    <p class="adbridge-license-note">
+      ADBridge Developer is MIT licensed. ADBridge Enterprise is proprietary Early Access software.
+    </p>
+  </footer>
+</body>
+</html>
