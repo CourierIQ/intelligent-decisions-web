@@ -25,6 +25,10 @@ function escapeRegExp(value) {
 
 test("ADBridge is the homepage flagship and CourierIQ is presented as a private beta", async () => {
   const home = await readPublic("index.html");
+  const productStatuses = new Map(
+    [...home.matchAll(/<p class="product-status">([^<]+)<\/p>\s*<h3>([^<]+)<\/h3>/g)]
+      .map((match) => [match[2], match[1]]),
+  );
 
   assert.match(home, /IDI Studios · Flagship Product/);
   assert.match(home, /<h1>ADBridge<\/h1>/);
@@ -36,6 +40,20 @@ test("ADBridge is the homepage flagship and CourierIQ is presented as a private 
   assert.match(home, /CourierIQ Private Beta · Session History/);
   assert.doesNotMatch(home, /Flagship Product · Inside Uber App/);
   assert.doesNotMatch(home, /Flagship Product · Session History/);
+  assert.equal(
+    productStatuses.get("ADBridge"),
+    "Flagship Product · Developer + Enterprise Early Access",
+  );
+  assert.equal(productStatuses.get("CourierIQ"), "Private Beta · Applications Open");
+  assert.equal(productStatuses.get("Chargeback Studio"), "MVP · Pre-Launch");
+  assert.equal(productStatuses.get("Revenue Leak Finder"), "MVP · Release Candidate");
+  assert.equal(productStatuses.get("BidLens"), "MVP · Pre-Launch");
+  assert.equal(productStatuses.get("ScopeFence"), "MVP · Pre-Launch");
+  for (const status of productStatuses.values()) assert.doesNotMatch(status, /\blive\b/i);
+  assert.match(home, /Preview Chargeback Studio/);
+  assert.match(home, /Preview Revenue Leak Finder/);
+  assert.match(home, /Preview BidLens/);
+  assert.match(home, /Preview ScopeFence/);
 });
 
 test("the ADBridge page preserves public product and security boundaries", async () => {

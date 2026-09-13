@@ -88,7 +88,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [x] Add a release checklist with smoke tests and an explicit rollback decision point.
 - [x] Add covering indexes for courieriq_offer_score_components.offer_id and user_id to the generated forward release-hardening migration.
 - [ ] Validate the release-hardening migration in a clean disposable local database, then apply it through the controlled production database release and confirm the performance advisor clears both findings.
-- [ ] Change homepage product badges so only verified products are labeled Live.
+- [x] Replace premature homepage Live badges with explicit beta, release-candidate, and pre-launch states while preserving ADBridge as the flagship.
 
 ## Product launch gates
 
