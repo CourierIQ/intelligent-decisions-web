@@ -66,7 +66,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [x] Review the authenticated Chargeback provisioning SECURITY DEFINER function. Its public RPC binds all work to auth.uid(), rejects unauthenticated calls, and grants execution only to authenticated users; the current advisor finding is intentional.
 - [ ] Exercise Chargeback provisioning with a real authenticated staging session before launch.
 - [x] Confirm all 36 public product tables have RLS enabled. Twenty-eight server-only tables intentionally expose no client policies and therefore fail closed outside privileged backend access.
-- [ ] Reduce the public health response to operational status that does not enumerate configured services.
+- [x] Reduce the public health response to an exact liveness payload that does not enumerate configured services.
 
 ### P0 — Production integrations
 
@@ -212,7 +212,7 @@ Never put secret values in this document.
 
 ## Verification record
 
-- [x] Twenty-one repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, cross-product Stripe routing, and release-binding inventory regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
+- [x] Twenty-two repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, minimal public health output, cross-product Stripe routing, and release-binding inventory regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
 - [x] Main product pages and compiled product bundles returned HTTP 200.
 - [x] The CourierIQ admin API redirected unauthenticated access to Cloudflare Access.
 - [x] Product account APIs rejected unauthenticated requests.

@@ -2297,19 +2297,7 @@ async function routeRequest(request, env) {
       }
       return jsonResponse({
         success: true,
-        service: "intelligent-decisions-web",
-        worker: "active",
-        supabaseUrlConfigured: Boolean(env.SUPABASE_URL),
-        supabasePublishableKeyConfigured: Boolean(env.SUPABASE_PUBLISHABLE_KEY),
-        supabaseSecretConfigured: Boolean(env.SUPABASE_SECRET_KEY),
-        resendConfigured: Boolean(env.RESEND_API_KEY),
-        turnstileConfigured: Boolean(env.TURNSTILE_SECRET_KEY),
-        stripePublishableKeyConfigured: Boolean(env.STRIPE_PUBLISHABLE_KEY),
-        stripeSecretKeyConfigured: Boolean(env.STRIPE_SECRET_KEY),
-        openAiConfigured: Boolean(env.OPENAI_API_KEY),
-        bidLensWebhookConfigured: Boolean(env.BIDLENS_STRIPE_WEBHOOK_SECRET || env.STRIPE_WEBHOOK_SECRET),
-        scopeFenceWebhookConfigured: Boolean(env.SCOPEFENCE_STRIPE_WEBHOOK_SECRET || env.STRIPE_WEBHOOK_SECRET),
-        betaInviteConfigured: Boolean(env.BETA_INVITE_URL),
+        status: "ok",
       });
     }
 

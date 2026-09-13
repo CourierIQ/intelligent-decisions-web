@@ -126,6 +126,32 @@ test("production requests enforce apex HTTPS while local Worker previews stay lo
   assert.equal(www.headers.get("location"), "https://intelligentdecisions.io/projects/adbridge/");
 });
 
+test("the public health endpoint exposes liveness without integration configuration", async () => {
+  const env = {
+    ASSETS: { fetch: () => new Response("asset handler should not run") },
+    SUPABASE_URL: "configured",
+    SUPABASE_SECRET_KEY: "configured",
+    STRIPE_SECRET_KEY: "configured",
+    OPENAI_API_KEY: "configured",
+  };
+
+  const response = await worker.fetch(
+    new Request("https://intelligentdecisions.io/api/health"),
+    env,
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { success: true, status: "ok" });
+  assert.equal(response.headers.get("cache-control"), "no-store");
+
+  const rejected = await worker.fetch(
+    new Request("https://intelligentdecisions.io/api/health", { method: "POST" }),
+    env,
+  );
+  assert.equal(rejected.status, 405);
+  assert.equal(rejected.headers.get("allow"), "GET");
+});
+
 test("BidLens and ScopeFence use an existing site icon", async () => {
   for (const pagePath of ["projects/bidlens/index.html", "projects/scopefence/index.html"]) {
     const page = await readPublic(pagePath);

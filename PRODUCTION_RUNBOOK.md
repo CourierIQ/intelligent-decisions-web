@@ -123,8 +123,8 @@ migration-history checks.
 4. Confirm Supabase project identity, Stripe account and mode, Resend sending
    domain, Turnstile hostname/actions, OpenAI project/model access, and the
    CourierIQ invitation target with their owners.
-5. Do not use `/api/health` as proof that an integration works. It reports only
-   whether bindings are present and is scheduled to be reduced before launch.
+5. Do not use `/api/health` as proof that an integration works. Its deliberately
+   minimal response proves only that the Worker request path is alive.
 
 For a new or rotated secret, run the full automated gate first. Then use the
 Cloudflare dashboard or `npx wrangler secret put <BINDING>` knowing that the
@@ -205,8 +205,8 @@ Run these against the production apex domain immediately after deployment:
 
 3. Confirm `/projects/evidencelane/` returns a permanent redirect to Chargeback
    Studio and does not present EvidenceLane as a separate product.
-4. Confirm `/api/health` returns 200 without using its binding flags as an
-   integration test.
+4. Confirm `/api/health` returns exactly `{ "success": true, "status": "ok" }`
+   with HTTP 200; verify integrations through their actual product journeys.
 5. Confirm unauthenticated account/admin endpoints fail closed.
 6. Complete the intended product's manual journey, including authentication,
    retained data, deletion where promised, payment and entitlement where
