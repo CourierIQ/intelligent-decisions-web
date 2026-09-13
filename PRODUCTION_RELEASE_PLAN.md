@@ -8,12 +8,12 @@ This is the canonical release checklist for the IDI web platform, flagship ADBri
 
 | Product | Release track | Current state | Target state |
 | --- | --- | --- | --- |
-| ADBridge | Flagship product | Developer and Enterprise products exist in separate repositories; the public website now has a flagship marketing surface | Release-ready Developer distribution and controlled Enterprise Early Access with a clear public product path |
+| ADBridge | Flagship product | The flagship marketing surface is live; Developer and Enterprise products remain on their separate release tracks | Release-ready Developer distribution and controlled Enterprise Early Access with a clear public product path |
 | CourierIQ | Primary product launch | Beta intake and admin infrastructure are live; invitation delivery is not configured | Controlled production beta with a verified applicant-to-first-sync journey |
 | Chargeback Studio | MVP | Page is deployed, but production authentication and payments are blocked | Authenticated dispute workspace with paid response-pack export |
 | Revenue Leak Finder | MVP | Core implementation is deployed and has no known code blocker | Verified free analysis and paid-credit workflow |
 | BidLens | MVP | UI, account, payment, and analysis code are deployed; AI is not configured | Verified document analysis with grounded outputs and paid credits |
-| ScopeFence | MVP | Production schema and customer deletion controls are ready; AI is not configured | Verified scope analysis with safe storage, deletion, and paid credits |
+| ScopeFence | MVP | Production UI, schema, payment routing, and customer deletion controls are deployed; AI is not configured | Verified scope analysis with safe storage, deletion, and paid credits |
 
 EvidenceLane is the former name of Chargeback Studio. Historical database and migration identifiers may retain the old name where renaming would create migration risk. Customer-facing references should use Chargeback Studio.
 
@@ -47,7 +47,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 
 ### P0 — Domain, routing, and browser security
 
-- [ ] Configure www.intelligentdecisions.io in Cloudflare and route or redirect it to the apex domain. It currently returns HTTP 522.
+- [x] Route www.intelligentdecisions.io through the production Worker and permanently redirect it to the apex domain.
 - [x] Replace the EvidenceLane HTML meta-refresh with a permanent HTTP 308 redirect to Chargeback Studio, with a clear static fallback for direct asset previews.
 - [x] Repair the production Content Security Policy for Chargeback Studio:
   - Bundle the pinned Supabase browser client with the application.
@@ -108,7 +108,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [ ] Obtain and integrate Authenticode signing for public or paid Enterprise distribution; integrity manifests alone do not establish publisher identity or SmartScreen reputation.
 - [ ] Produce clean, reviewed, traceable Developer and Enterprise release candidates and validate installation, upgrade, rollback, and uninstall on supported Windows and Android configurations.
 - [ ] Define the operational owner and response path for Enterprise Early Access inquiries.
-- [ ] Deploy and smoke-test the ADBridge marketing page on the apex and www hostnames.
+- [x] Deploy and smoke-test the ADBridge marketing page on the apex and www hostnames.
 
 Release gate: clean reviewed commits, all prescribed Developer and Enterprise checks passing, signed and traceable distributions, a verified physical-device workflow, and an operational Early Access path.
 
@@ -178,7 +178,7 @@ Release gate: the golden set meets its quality thresholds, failures are credit-s
 - [ ] Configure OPENAI_API_KEY and confirm production model access.
 - [x] Add release-candidate APIs and UI for deleting saved scopes, embedded client requests, analyses, history, and the ScopeFence product account without deleting the shared IDI Auth identity.
 - [x] Apply and verify the ScopeFence deletion migration so payment audit rows detach from deleted accounts and delayed Stripe events cannot recreate a deleted workspace.
-- [ ] Publish a ScopeFence privacy and retention policy before accepting customer agreements.
+- [x] Publish the ScopeFence privacy, retention, AI-processing, and deletion disclosures before accepting customer agreements.
 - [ ] Decide whether full source agreements must be retained; minimize or make retention opt-in where practical.
 - [ ] Build a reviewed golden set for included, ambiguous, and out-of-scope requests.
 - [ ] Define acceptable classification accuracy, grounding, latency, timeout, and per-analysis cost thresholds.
@@ -225,6 +225,10 @@ Never put secret values in this document.
 - [x] npm reported zero known dependency vulnerabilities on 2026-09-12.
 - [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
 - [x] Twenty-six repeatable Chromium checks cover the homepage, ADBridge, CourierIQ, all four MVPs, the four company information pages, the legacy EvidenceLane redirect, and the ScopeFence deletion controls across desktop and mobile layouts.
+- [x] The same twenty-six Chromium checks passed against production after deployment with no CSP violations, console errors, failed same-origin requests, missing assets, or horizontal overflow.
+- [x] The apex and www hostnames, permanent legacy redirect, minimal health response, protected account APIs, and Cloudflare Access admin boundary passed production HTTP smoke checks.
+- [x] Cloudflare Worker invocation/error logs and Web Analytics now load under the production CSP.
+- [x] Chargeback Studio's production payment configuration reached the sign-in boundary, confirming matching live-mode Stripe publishable and secret bindings without creating a PaymentIntent.
 - [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
 - [x] All seventeen production migration versions are reconciled to local filenames, including the legacy beta baseline, Chargeback Studio Worker grants, CourierIQ foreign-key indexes, and ScopeFence customer-deletion safeguards.
 - [x] The production database verified the ScopeFence payment-audit `SET NULL` relationship, service-role-only fulfillment RPC, webhook non-recreation safeguard, and both CourierIQ covering indexes after migration.
