@@ -92,7 +92,7 @@ test("production Worker configuration covers both hostnames and persists release
   const config = await readFile(new URL("../wrangler.toml", import.meta.url), "utf8");
 
   assert.match(config, /pattern = "intelligentdecisions\.io", custom_domain = true/);
-  assert.match(config, /pattern = "www\.intelligentdecisions\.io", custom_domain = true/);
+  assert.match(config, /pattern = "www\.intelligentdecisions\.io\/\*", zone_name = "intelligentdecisions\.io"/);
   assert.match(config, /STRIPE_PUBLISHABLE_KEY = "pk_live_[^"]+"/);
   assert.match(config, /\[observability\][\s\S]*enabled = true[\s\S]*head_sampling_rate = 1/);
 });

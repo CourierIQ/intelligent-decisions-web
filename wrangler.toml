@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-07-09"
 routes = [
   { pattern = "intelligentdecisions.io", custom_domain = true },
-  { pattern = "www.intelligentdecisions.io", custom_domain = true }
+  { pattern = "www.intelligentdecisions.io/*", zone_name = "intelligentdecisions.io" }
 ]
 
 [assets]
