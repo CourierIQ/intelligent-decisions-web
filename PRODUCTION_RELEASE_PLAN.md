@@ -176,7 +176,8 @@ Release gate: the golden set meets its quality thresholds, failures are credit-s
 - [x] UI, account, workspace, credit, Stripe, analysis, history, and change-order generation code are present.
 - [x] The analysis request uses the OpenAI Responses API with storage disabled and structured output.
 - [ ] Configure OPENAI_API_KEY and confirm production model access.
-- [ ] Add APIs and UI for deleting saved scopes, client requests, analyses, and the account.
+- [x] Add release-candidate APIs and UI for deleting saved scopes, embedded client requests, analyses, history, and the ScopeFence product account without deleting the shared IDI Auth identity.
+- [ ] Apply and verify the ScopeFence deletion migration so payment audit rows detach from deleted accounts and delayed Stripe events cannot recreate a deleted workspace.
 - [ ] Publish a ScopeFence privacy and retention policy before accepting customer agreements.
 - [ ] Decide whether full source agreements must be retained; minimize or make retention opt-in where practical.
 - [ ] Build a reviewed golden set for included, ambiguous, and out-of-scope requests.
@@ -213,17 +214,17 @@ Never put secret values in this document.
 
 ## Verification record
 
-- [x] Twenty-two repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, minimal public health output, cross-product Stripe routing, and release-binding inventory regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
+- [x] Thirty-one repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, minimal public health output, cross-product Stripe routing, release-binding inventory, and ScopeFence deletion authorization regressions, pass on the release candidate.
 - [x] Main product pages and compiled product bundles returned HTTP 200.
 - [x] The CourierIQ admin API redirected unauthenticated access to Cloudflare Access.
 - [x] Product account APIs rejected unauthenticated requests.
 - [x] A live browser check reproduced Chargeback Studio's blocked Supabase and Stripe libraries.
 - [x] The www hostname failure was reproduced.
 - [x] All Revenue Leak Finder, BidLens, and ScopeFence browser bundles built successfully after npm ci.
-- [x] Wrangler completed a production Worker and 49-asset dry run without deploying.
+- [x] Wrangler completed a production Worker and 58-asset dry run without deploying.
 - [x] npm reported zero known dependency vulnerabilities on 2026-09-12.
 - [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
-- [x] Twenty-four repeatable Chromium smoke checks cover the homepage, ADBridge, CourierIQ, all four MVPs, the four company information pages, and the legacy EvidenceLane redirect across desktop and mobile layouts.
+- [x] Twenty-six repeatable Chromium checks cover the homepage, ADBridge, CourierIQ, all four MVPs, the four company information pages, the legacy EvidenceLane redirect, and the ScopeFence deletion controls across desktop and mobile layouts.
 - [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
 - [x] All fourteen tracked production migration versions were reconciled to byte-preserving local filenames, and a current CLI-generated hardening migration now records the existing Chargeback Studio Worker grants plus the two pending CourierIQ foreign-key indexes.
 - [x] The reconstructed CourierIQ and beta-intake baseline matches production's 14 tables, 209 columns, 40 named constraints, and 32 existing indexes; it executed successfully with the RLS and hardening migrations in an isolated PostgreSQL-compatible runtime.

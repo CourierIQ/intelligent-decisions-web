@@ -133,6 +133,9 @@
 .signalOption input { width: 15px; height: 15px; margin: 0; accent-color: var(--sf-blue-deep); }
 .textButton { margin-top: -7px; padding: 7px 0; font-size: .83rem; }
 .textButton:disabled { color: #59677e; cursor: not-allowed; }
+.scopeActions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+.dangerTextButton { padding: 7px 0; border: 0; background: transparent; color: #d98a82; cursor: pointer; font-size: .78rem; font-weight: 800; }
+.dangerTextButton:hover { color: var(--sf-red); }
 .rule { height: 1px; margin: 40px 0; background: linear-gradient(90deg, var(--sf-line), transparent); }
 .rateField { max-width: 240px; }
 .rateField > span { display: grid; grid-template-columns: auto 1fr auto; align-items: center; min-height: 48px; padding: 0 12px; border: 1px solid var(--sf-line); border-radius: 8px; background: #090e17; }
@@ -154,16 +157,26 @@
 .history { min-width: 0; padding: 32px 22px; background: #0a0f18; }
 .history h2 { margin: 0; font-size: 1.3rem; }
 .history ol { display: grid; gap: 10px; margin: 25px 0 0; padding: 0; list-style: none; }
-.history li button { display: grid; width: 100%; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 15px; border: 1px solid var(--sf-line); border-radius: 8px; background: var(--sf-panel); color: var(--sf-ink); cursor: pointer; text-align: left; }
-.history li button:hover { border-color: rgba(121, 167, 255, .5); transform: translateY(-1px); }
+.history li { position: relative; }
+.historyOpen { display: grid; width: 100%; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 15px 48px 15px 15px; border: 1px solid var(--sf-line); border-radius: 8px; background: var(--sf-panel); color: var(--sf-ink); cursor: pointer; text-align: left; }
+.historyOpen:hover { border-color: rgba(121, 167, 255, .5); transform: translateY(-1px); }
 .history li strong { grid-column: 1 / 3; overflow: hidden; font-size: .92rem; text-overflow: ellipsis; white-space: nowrap; }
 .history li p { grid-column: 1 / 3; display: -webkit-box; margin: 0; overflow: hidden; color: var(--sf-muted); font-size: .81rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .history li time { color: #68758a; font-size: .72rem; }
-.history li button > span { font-size: .65rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.historyOpen > span { font-size: .65rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.historyDelete { position: absolute; top: 8px; right: 8px; display: grid; width: 30px; height: 30px; place-items: center; border: 0; border-radius: 6px; background: transparent; color: #718096; cursor: pointer; font-size: 1.15rem; }
+.historyDelete:hover { background: rgba(255, 130, 119, .09); color: var(--sf-red); }
 .mini_included { color: #73cfa1; }
 .mini_ambiguous { color: var(--sf-amber); }
 .mini_out_of_scope { color: var(--sf-red); }
 .emptyHistory { margin: 28px 0 0; color: var(--sf-muted); font-size: .9rem; line-height: 1.6; }
+.dataControls { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--sf-line); }
+.dataControls h3 { margin: 0 0 7px; font-size: .85rem; }
+.dataControls p { margin: 0; color: var(--sf-muted); font-size: .76rem; line-height: 1.55; }
+.dataControls > div { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
+.dataControls button { padding: 0; border: 0; background: transparent; color: #9fb0c9; cursor: pointer; font-size: .72rem; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
+.dataControls button:last-child { color: #d98a82; }
+.dataControls button:disabled { color: #566277; cursor: not-allowed; text-decoration: none; }
 
 .emptyResult { display: grid; grid-template-columns: auto 1fr minmax(200px, .5fr); gap: 22px; align-items: center; min-height: 220px; margin-top: 34px; padding: clamp(30px, 5vw, 64px); border: 1px dashed rgba(121, 167, 255, .28); border-radius: 12px; background: rgba(14, 20, 32, .56); }
 .emptyResult h2 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 3rem); font-weight: 700; letter-spacing: -.035em; }
@@ -234,6 +247,21 @@
 .checkoutReview dl div { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--sf-line); }
 .checkoutReview dd { margin: 0; }
 
+.deleteBackdrop { position: fixed; z-index: 400; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(3, 6, 11, .88); backdrop-filter: blur(10px); }
+.deleteDialog { width: min(520px, 100%); padding: 30px; border: 1px solid rgba(255, 130, 119, .34); border-radius: 12px; background: #0b101a; box-shadow: 0 35px 100px #000; }
+.deleteDialog > p:first-child { margin: 0 0 8px; color: var(--sf-red); font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+.deleteDialog h2 { margin: 0 0 14px; font-size: 1.65rem; }
+.deleteDialog > p:not(:first-child) { color: #aeb9cc; font-size: .9rem; line-height: 1.65; }
+.deleteDialog label { display: grid; gap: 7px; margin-top: 20px; color: #cbd5e6; font-size: .76rem; font-weight: 750; }
+.deleteDialog input { min-height: 46px; padding: 0 12px; border: 1px solid var(--sf-line); border-radius: 7px; outline: none; background: #090e17; color: var(--sf-ink); }
+.deleteDialog input:focus { border-color: var(--sf-red); box-shadow: 0 0 0 3px rgba(255, 130, 119, .1); }
+.deleteDialog > div { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.deleteDialog button { min-height: 43px; padding: 0 16px; border-radius: 7px; cursor: pointer; font-weight: 800; }
+.deleteDialog button:disabled { cursor: wait; opacity: .58; }
+.cancelDelete { border: 1px solid var(--sf-line); background: transparent; color: var(--sf-ink); }
+.confirmDelete { border: 1px solid var(--sf-red); background: var(--sf-red); color: #170806; }
+.deleteDialog .deleteError { margin: 14px 0 0; color: #ffaaa2; }
+
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 26px clamp(20px, 4vw, 58px); border-top: 1px solid var(--sf-line); color: #718096; font-size: .78rem; }
 .footer p { margin: 0; }
 .footer a { color: var(--sf-muted); font-weight: 750; }
@@ -285,6 +313,9 @@
   .checkoutDialog > header, .checkoutForm, .checkoutReview { padding-left: 20px; padding-right: 20px; }
   .checkoutActions { flex-direction: column-reverse; }
   .checkoutActions button { width: 100%; }
+  .deleteDialog { padding: 24px 20px; }
+  .deleteDialog > div { flex-direction: column-reverse; }
+  .deleteDialog button { width: 100%; }
   .footer { align-items: flex-start; flex-direction: column; }
   .footer nav { justify-content: flex-start; }
 }

@@ -122,6 +122,41 @@ async function loadWorkspace(identity, env) {
   return { account: ensured, scopes: (scopes || []).map(mapScope), history: (analyses || []).map(mapAnalysis), user: identity };
 }
 
+function ownedResourceId(pathname, resource) {
+  const match = pathname.match(new RegExp(`^/api/scopefence/${resource}/([^/]+)$`));
+  return match && UUID_PATTERN.test(match[1]) ? match[1] : null;
+}
+
+async function deleteOwnedResource(table, id, userId, env) {
+  const rows = await serviceRequest(
+    `${table}?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}&select=id`,
+    { method: "DELETE" },
+    env,
+    "return=representation",
+  );
+  return Array.isArray(rows) && rows.length === 1;
+}
+
+async function deleteHistory(userId, env) {
+  const rows = await serviceRequest(
+    `scopefence_analyses?user_id=eq.${encodeURIComponent(userId)}&select=id`,
+    { method: "DELETE" },
+    env,
+    "return=representation",
+  );
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
+async function deleteScopeFenceAccount(userId, env) {
+  const rows = await serviceRequest(
+    `scopefence_accounts?user_id=eq.${encodeURIComponent(userId)}&select=user_id`,
+    { method: "DELETE" },
+    env,
+    "return=representation",
+  );
+  return Array.isArray(rows) && rows.length === 1;
+}
+
 async function handleAnalyze(request, env) {
   const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to run a ScopeFence analysis." }, 401);
   if (!cleanString(env.OPENAI_API_KEY, 8192)) return jsonResponse({ error: "ScopeFence AI is not configured yet. No credit was used.", code: "ai_unavailable" }, 503);
@@ -191,6 +226,8 @@ async function handleWebhook(request, env) {
 
 export async function handleScopeFenceApi(request, env, url) {
   const pathname = url.pathname.replace(/\/+$/, ""); const method = request.method.toUpperCase();
+  const scopeId = ownedResourceId(pathname, "scopes");
+  const analysisId = ownedResourceId(pathname, "analyses");
   if (pathname === "/api/scopefence/stripe/webhook") return handleWebhook(request, env);
   if (method !== "GET" && method !== "HEAD" && !sameOrigin(request)) return jsonResponse({ error: "Invalid request origin." }, 403);
   try {
@@ -200,6 +237,10 @@ export async function handleScopeFenceApi(request, env, url) {
     if (pathname === "/api/scopefence/auth/refresh" && method === "POST") { try { const session = await auth.refresh(request, env); if (!session) return jsonResponse({ error: "Sign in to continue." }, 401); const headers = new Headers(); auth.appendSessionCookies(headers, session, request); return jsonResponse({ ok: true, ...(await loadWorkspace(session.user, env)) }, 200, headers); } catch { const headers = new Headers(); auth.expireCookies(headers, request); return jsonResponse({ error: "Your session expired. Sign in again." }, 401, headers); } }
     if (pathname === "/api/scopefence/auth/logout" && method === "POST") { try { await auth.revoke(request, env); } catch {} const headers = new Headers(); auth.expireCookies(headers, request); return jsonResponse({ ok: true }, 200, headers); }
     if (pathname === "/api/scopefence/scopes" && method === "POST") { const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to save agreements." }, 401); const body = await readJson(request, 40000); const title = bounded(body.title, 120); const content = bounded(body.content, 30000); if (!title || content.length < 120) return jsonResponse({ error: "Add an agreement name and enough detail to save it." }, 400); await ensureAccount(identity, env); const rows = await serviceRequest("scopefence_scopes?select=id,title,content,created_at,updated_at", { method: "POST", body: JSON.stringify([{ user_id: identity.id, title, content }]) }, env, "return=representation"); return jsonResponse({ ok: true, scope: mapScope(rows[0]) }); }
+    if (scopeId && method === "DELETE") { const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to delete saved agreements." }, 401); if (!await deleteOwnedResource("scopefence_scopes", scopeId, identity.id, env)) return jsonResponse({ error: "That saved agreement was not found." }, 404); return jsonResponse({ ok: true, deletedId: scopeId }); }
+    if (analysisId && method === "DELETE") { const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to delete saved checks." }, 401); if (!await deleteOwnedResource("scopefence_analyses", analysisId, identity.id, env)) return jsonResponse({ error: "That saved check was not found." }, 404); return jsonResponse({ ok: true, deletedId: analysisId }); }
+    if (pathname === "/api/scopefence/history" && method === "DELETE") { const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to clear saved checks." }, 401); return jsonResponse({ ok: true, deletedCount: await deleteHistory(identity.id, env) }); }
+    if (pathname === "/api/scopefence/account" && method === "DELETE") { const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to delete ScopeFence data." }, 401); const body = await readJson(request); if (cleanString(body.confirmation, 320).toLowerCase() !== identity.email) return jsonResponse({ error: "Enter your account email to confirm deletion." }, 400); const deleted = await deleteScopeFenceAccount(identity.id, env); if (!deleted) return jsonResponse({ error: "Your ScopeFence workspace was not found." }, 404); try { await auth.revoke(request, env); } catch {} const headers = new Headers(); auth.expireCookies(headers, request); return jsonResponse({ ok: true }, 200, headers); }
     if (pathname === "/api/scopefence/analyze" && method === "POST") return handleAnalyze(request, env);
     if (pathname === "/api/scopefence/checkout" && method === "POST") { const identity = await auth.identity(request, env); if (!identity) return jsonResponse({ error: "Sign in to add ScopeFence credits." }, 401); const body = await readJson(request); const key = cleanString(body.idempotencyKey, 80); if (!UUID_PATTERN.test(key)) return jsonResponse({ error: "Invalid purchase request." }, 400); await ensureAccount(identity, env); return jsonResponse({ ok: true, checkoutUrl: await stripeCheckout(identity, key, request, env) }); }
     return jsonResponse({ error: "API route not found." }, 404);
@@ -211,4 +252,4 @@ export async function handleScopeFenceApi(request, env, url) {
   }
 }
 
-export const scopeFenceInternals = { normalizeAnalysis, canonical };
+export const scopeFenceInternals = { normalizeAnalysis, canonical, ownedResourceId };

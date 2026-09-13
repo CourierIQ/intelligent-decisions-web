@@ -129,7 +129,8 @@ test("company legal and support pages are complete, discoverable, and locally li
   assert.match(privacy, /ScopeFence/);
   assert.match(privacy, /store: false/);
   assert.match(privacy, /abuse-monitoring logs may still retain customer content for up to 30 days/i);
-  assert.match(privacy, /Self-service deletion is not yet available/i);
+  assert.match(privacy, /controls to delete individual agreements and checks/i);
+  assert.match(privacy, /does not delete the shared IDI sign-in/i);
   assert.doesNotMatch(privacy, /zero retention/i);
 
   const terms = pages[1];

@@ -46,6 +46,12 @@ type RequestDraft = {
   signals: string[];
 };
 
+type DeleteTarget =
+  | { kind: "scope"; id: string; title: string }
+  | { kind: "analysis"; id: string; title: string }
+  | { kind: "history"; title: string }
+  | { kind: "account"; title: string };
+
 const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const TURNSTILE_KEY = "0x4AAAAAADzePhY2Hgvp3XUu";
 const AGREEMENT_MARKER = "[ScopeFence guided agreement]";
@@ -291,9 +297,12 @@ export function ScopeFenceWorkspace() {
   const [email, setEmail] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const localPreview = false;
-  const [busy, setBusy] = useState<"" | "auth" | "save" | "analyze" | "payment">("");
+  const [busy, setBusy] = useState<"" | "auth" | "save" | "analyze" | "payment" | "delete">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const turnstileNode = useRef<HTMLDivElement>(null);
   const turnstileId = useRef("");
   const turnstileToken = useRef("");
@@ -472,6 +481,76 @@ export function ScopeFenceWorkspace() {
       setMessage("You are signed out. Your current draft remains on this device until you leave the page.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "You could not be signed out.");
+    } finally {
+      setBusy("");
+    }
+  }
+
+  function requestDeletion(target: DeleteTarget) {
+    setDeleteTarget(target);
+    setDeleteConfirmation("");
+    setDeleteError("");
+  }
+
+  function closeDeletion() {
+    if (busy === "delete") return;
+    setDeleteTarget(null);
+    setDeleteConfirmation("");
+    setDeleteError("");
+  }
+
+  async function confirmDeletion() {
+    if (!deleteTarget || !account || busy === "delete") return;
+    if (deleteTarget.kind === "account" && deleteConfirmation.trim().toLowerCase() !== account.email.toLowerCase()) {
+      setDeleteError("Enter your account email exactly to confirm deletion.");
+      return;
+    }
+    setBusy("delete");
+    setDeleteError("");
+    setError("");
+    setMessage("");
+    try {
+      if (deleteTarget.kind === "scope") {
+        await responseJson(await fetch(`/api/scopefence/scopes/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" }));
+        setScopes((current) => current.filter((scope) => scope.id !== deleteTarget.id));
+        if (scopeId === deleteTarget.id) {
+          setScopeId(null);
+          setScopeTitle("Client agreement");
+          setAgreementDraft(EMPTY_AGREEMENT);
+        }
+        setMessage("Saved agreement deleted. Past checks remain until you delete them separately.");
+      } else if (deleteTarget.kind === "analysis") {
+        await responseJson(await fetch(`/api/scopefence/analyses/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" }));
+        setHistory((current) => current.filter((item) => item.id !== deleteTarget.id));
+        if (active?.id === deleteTarget.id) setActive(null);
+        setMessage("Saved check, client request, and generated result deleted.");
+      } else if (deleteTarget.kind === "history") {
+        await responseJson(await fetch("/api/scopefence/history", { method: "DELETE" }));
+        setHistory([]);
+        setActive(null);
+        setMessage("Saved check history and embedded client requests deleted.");
+      } else {
+        await responseJson(await fetch("/api/scopefence/account", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmation: deleteConfirmation }),
+        }));
+        setAccount(null);
+        setScopes([]);
+        setHistory([]);
+        setActive(null);
+        setScopeId(null);
+        setScopeTitle("Client agreement");
+        setAgreementDraft(EMPTY_AGREEMENT);
+        setRequestDraft(EMPTY_REQUEST);
+        setEmail("");
+        setCodeSent(false);
+        setMessage("Your ScopeFence workspace data was deleted. Your shared IDI sign-in remains available for other products.");
+      }
+      setDeleteTarget(null);
+      setDeleteConfirmation("");
+    } catch (reason) {
+      setDeleteError(reason instanceof Error ? reason.message : "The deletion could not be completed.");
     } finally {
       setBusy("");
     }
@@ -708,7 +787,10 @@ export function ScopeFenceWorkspace() {
               </label>
             </details>
           </div>
-          <button className={styles.textButton} type="button" onClick={saveScope} disabled={busy === "save" || !account}>{busy === "save" ? "Saving…" : "Save this agreement"}</button>
+          <div className={styles.scopeActions}>
+            <button className={styles.textButton} type="button" onClick={saveScope} disabled={busy === "save" || !account}>{busy === "save" ? "Saving…" : "Save this agreement"}</button>
+            {account && scopeId ? <button className={styles.dangerTextButton} type="button" onClick={() => requestDeletion({ kind: "scope", id: scopeId, title: scopeTitle })}>Delete saved agreement</button> : null}
+          </div>
 
           <div className={styles.rule} />
           <div className={styles.stepHeading}><span>02</span><div><h2>Describe what changed</h2><p>Separate the actual request from the pressure around it.</p></div></div>
@@ -800,14 +882,15 @@ export function ScopeFenceWorkspace() {
           <div><p className={styles.eyebrow}>Workspace record</p><h2 id="history-title">Recent checks</h2></div>
           {loading ? <p className={styles.emptyHistory}>Loading your history…</p> : history.length ? (
             <ol>{history.map((item) => (
-              <li key={item.id}><button type="button" onClick={() => openHistory(item)}>
+              <li key={item.id}><button className={styles.historyOpen} type="button" onClick={() => openHistory(item)}>
                 <span className={styles[`mini_${item.result.verdict}`]}>{VERDICTS[item.result.verdict].label}</span>
                 <strong>{item.scopeTitle}</strong>
                 <p>{requestHeadline(item.clientRequest)}</p>
                 <time dateTime={item.createdAt}>{date(item.createdAt)}</time>
-              </button></li>
+              </button><button className={styles.historyDelete} type="button" onClick={() => requestDeletion({ kind: "analysis", id: item.id, title: item.scopeTitle })} aria-label={`Delete saved check for ${item.scopeTitle}`}>×</button></li>
             ))}</ol>
           ) : <p className={styles.emptyHistory}>{account ? "Your completed checks will appear here." : "Sign in to keep a private, reusable history."}</p>}
+          {account ? <section className={styles.dataControls} aria-labelledby="data-controls-title"><h3 id="data-controls-title">Data controls</h3><p>Delete individual records, clear saved check history, or remove the entire ScopeFence workspace.</p><div><button type="button" disabled={!history.length} onClick={() => requestDeletion({ kind: "history", title: "Clear saved check history" })}>Clear history</button><button type="button" onClick={() => requestDeletion({ kind: "account", title: "Delete ScopeFence data" })}>Delete ScopeFence data</button></div></section> : null}
         </aside>
       </div>
 
@@ -850,6 +933,22 @@ export function ScopeFenceWorkspace() {
           <div aria-hidden="true"><i /><i /><i /></div>
         </section>
       )}
+
+      {deleteTarget ? <div className={styles.deleteBackdrop} role="presentation">
+        <section className={styles.deleteDialog} role="dialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description">
+          <p>Permanent deletion</p>
+          <h2 id="delete-title">{deleteTarget.title}</h2>
+          <p id="delete-description">{
+            deleteTarget.kind === "scope" ? "This removes the saved agreement. Past checks keep their own copy until you delete those checks." :
+            deleteTarget.kind === "analysis" ? "This removes the saved check, its copied agreement and client request, and the generated result. Used analysis credits are not restored." :
+            deleteTarget.kind === "history" ? "This removes every saved check, copied agreement, client request, and generated result. Saved agreements remain, and used credits are not restored." :
+            "This removes all ScopeFence agreements, checks, client requests, generated results, and unused credits. Required payment audit records remain without a ScopeFence account link. Your shared IDI sign-in and data in other IDI products are not deleted."
+          }</p>
+          {deleteTarget.kind === "account" ? <label>Enter {account?.email} to confirm<input type="email" value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} autoComplete="off" autoFocus /></label> : null}
+          {deleteError ? <p className={styles.deleteError} role="alert">{deleteError}</p> : null}
+          <div><button className={styles.cancelDelete} type="button" onClick={closeDeletion} disabled={busy === "delete"}>Cancel</button><button className={styles.confirmDelete} type="button" onClick={confirmDeletion} disabled={busy === "delete" || (deleteTarget.kind === "account" && !deleteConfirmation.trim())}>{busy === "delete" ? "Deleting…" : "Delete permanently"}</button></div>
+        </section>
+      </div> : null}
 
     </div>
   );
