@@ -12,9 +12,9 @@ Local gate: 32/32 repository tests, 26/26 local Chromium desktop/mobile checks, 
 
 Binding preflight:
 
-- Present: Supabase URL/publishable/server keys, Turnstile, Resend, Stripe secret/publishable/webhook keys.
+- Present: Supabase URL/publishable/server keys, Turnstile, Resend, Stripe secret/publishable/webhook keys, and the OpenAI production service key.
 - Matching Stripe live mode confirmed when the production payment-config endpoint reached its authenticated boundary rather than returning a configuration failure.
-- Not present: `OPENAI_API_KEY` and `BETA_INVITE_URL`. BidLens and ScopeFence remain pre-launch; CourierIQ invitations remain a controlled manual/private-beta step.
+- Not present: `BETA_INVITE_URL`. The OpenAI service key was added after the application release, but the API account is not funded and no billable production AI request has been made. BidLens and ScopeFence remain pre-launch; CourierIQ invitations remain a controlled manual/private-beta step.
 
 Database release:
 
@@ -32,6 +32,7 @@ Cloudflare release:
 - The previous and final Worker versions are retained in Cloudflare deployment history for rollback.
 - Apex custom domain and `www.intelligentdecisions.io/*` Worker route are active.
 - Persistent Worker logs and 100% launch-window sampling are enabled.
+- `OPENAI_API_KEY` was added as an encrypted Worker secret using the project-scoped `IDI Website Production` service account. The secret value was not written to the repository or release record.
 
 Production verification:
 
@@ -46,7 +47,7 @@ Production verification:
 Go/no-go decision:
 
 - GO: public website, ADBridge flagship marketing surface, company pages, Revenue Leak Finder release-candidate surface, Chargeback Studio preview, and the BidLens/ScopeFence pre-launch surfaces.
-- HOLD: labeling BidLens or ScopeFence live until an owner supplies `OPENAI_API_KEY` and an authenticated AI journey passes.
+- HOLD: labeling BidLens or ScopeFence live until API billing is funded and an authenticated AI journey passes.
 - HOLD: automated CourierIQ invitations until an owner supplies the approved `BETA_INVITE_URL` and the applicant-to-install journey passes.
 - HOLD: labeling paid product journeys live until real authenticated payment, signed webhook, exact entitlement, duplicate-event, cancellation/failure, and recovery checks are recorded.
 

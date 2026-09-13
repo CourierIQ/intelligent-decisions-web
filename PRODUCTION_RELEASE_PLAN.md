@@ -161,7 +161,8 @@ Release gate: no CSP errors, complete auth recovery, one verified export for eve
 - [x] UI, account, credit, Stripe, analysis, history, and deletion code are present.
 - [x] A product privacy page exists.
 - [x] The analysis request uses the OpenAI Responses API with storage disabled and structured output.
-- [ ] Configure OPENAI_API_KEY and confirm production model access.
+- [x] Configure OPENAI_API_KEY as an encrypted Cloudflare Worker secret.
+- [ ] Fund the API account and confirm production model access.
 - [ ] Test PDF, DOC, DOCX, RTF, ODT, TXT, and Markdown fixtures at small, large, malformed, and maximum supported sizes.
 - [ ] Build a reviewed golden set for requirements, deadlines, evaluation criteria, ambiguities, and evidence citations.
 - [ ] Define acceptable accuracy, grounding, latency, timeout, and per-analysis cost thresholds.
@@ -175,7 +176,8 @@ Release gate: the golden set meets its quality thresholds, failures are credit-s
 
 - [x] UI, account, workspace, credit, Stripe, analysis, history, and change-order generation code are present.
 - [x] The analysis request uses the OpenAI Responses API with storage disabled and structured output.
-- [ ] Configure OPENAI_API_KEY and confirm production model access.
+- [x] Configure OPENAI_API_KEY as an encrypted Cloudflare Worker secret.
+- [ ] Fund the API account and confirm production model access.
 - [x] Add release-candidate APIs and UI for deleting saved scopes, embedded client requests, analyses, history, and the ScopeFence product account without deleting the shared IDI Auth identity.
 - [x] Apply and verify the ScopeFence deletion migration so payment audit rows detach from deleted accounts and delayed Stripe events cannot recreate a deleted workspace.
 - [x] Publish the ScopeFence privacy, retention, AI-processing, and deletion disclosures before accepting customer agreements.
@@ -204,10 +206,10 @@ Configuration detected as present (binding names rechecked against the live Work
 - Stripe secret key
 - Stripe publishable key
 - Shared Stripe webhook configuration used by BidLens and ScopeFence fallback routing
+- OpenAI production service key (encrypted Worker secret; API account not yet funded)
 
 Required production configuration detected as missing:
 
-- OPENAI_API_KEY
 - BETA_INVITE_URL
 
 Never put secret values in this document.

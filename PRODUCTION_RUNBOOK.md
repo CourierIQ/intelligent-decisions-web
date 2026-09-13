@@ -42,15 +42,15 @@ Never add secret values to this document.
 | `SUPABASE_URL` | Public config | CourierIQ and all four MVPs | Database/Auth | Defined in `wrangler.toml`; verify it targets the approved production project |
 | `SUPABASE_PUBLISHABLE_KEY` | Public credential | Browser/Auth flows for all four MVPs | Database/Auth | Defined in `wrangler.toml`; safe to expose, but effective access still depends on grants and RLS |
 | `SUPABASE_SECRET_KEY` | Secret | Server-side database access for CourierIQ and all four MVPs | Database/Auth | Binding name confirmed; verify backend requests and ensure it never reaches browser code |
-| `STRIPE_PUBLISHABLE_KEY` | Public credential | Chargeback Studio Payment Element | Payments | **Missing from committed production vars; release blocker for Chargeback Studio** |
-| `STRIPE_SECRET_KEY` | Secret | PaymentIntent/Checkout creation and verification | Payments | Binding name confirmed; verify its mode matches the publishable key and planned release mode |
+| `STRIPE_PUBLISHABLE_KEY` | Public credential | Chargeback Studio Payment Element | Payments | Configured in the production Worker; live mode matches the Stripe secret |
+| `STRIPE_SECRET_KEY` | Secret | PaymentIntent/Checkout creation and verification | Payments | Configured in the production Worker; live mode matches the publishable key |
 | `STRIPE_WEBHOOK_SECRET` | Secret | Shared signed webhook and fallback for BidLens/ScopeFence handlers | Payments | Binding name confirmed; verify a signed event at `/api/stripe/webhook` grants exactly one entitlement |
 | `BIDLENS_STRIPE_WEBHOOK_SECRET` | Optional secret | Dedicated BidLens webhook endpoint | Payments | Not configured by design; the product uses the shared webhook secret unless a separate Stripe destination is created |
 | `SCOPEFENCE_STRIPE_WEBHOOK_SECRET` | Optional secret | Dedicated ScopeFence webhook endpoint | Payments | Not configured by design; the product uses the shared webhook secret unless a separate Stripe destination is created |
 | `STRIPE_CHARGEBACK_TAX_CODE` | Optional config | Chargeback Studio tax calculation | Payments | Not required when the Stripe account preset tax code is correct; verify one test calculation before live mode |
 | `RESEND_API_KEY` | Secret | CourierIQ and Chargeback Studio email | Email | Binding name confirmed; verify sender domains and both applicant/operator delivery paths |
 | `TURNSTILE_SECRET_KEY` | Secret | CourierIQ intake and all MVP sign-in challenges | Cloudflare | Binding name confirmed; verify the production hostname and expected action for each flow |
-| `OPENAI_API_KEY` | Secret | BidLens and ScopeFence analysis | AI | **Not configured; release blocker for BidLens and ScopeFence** |
+| `OPENAI_API_KEY` | Secret | BidLens and ScopeFence analysis | AI | Configured in the production Worker on 2026-09-12 using the `IDI Website Production` service account; API billing is not funded, so model-access verification remains blocked |
 | `BIDLENS_OPENAI_MODEL` | Optional config | BidLens analysis | AI | Not configured; code uses its reviewed default until explicitly overridden |
 | `SCOPEFENCE_OPENAI_MODEL` | Optional config | ScopeFence analysis | AI | Not configured; code next checks `OPENAI_MODEL`, then its reviewed default |
 | `OPENAI_MODEL` | Optional config | ScopeFence fallback model | AI | Not configured; keep unset unless one shared override is intentional |
@@ -69,10 +69,9 @@ ignored by Git. Use `.dev.vars` or `.env`, not both.
 
 Do not promote every product to Live until all applicable items are resolved:
 
-- Add the approved `STRIPE_PUBLISHABLE_KEY` as committed public Worker config
-  and prove it matches the Stripe secret key's account and test/live mode.
-- Add `OPENAI_API_KEY` as a Cloudflare secret and verify BidLens and ScopeFence
-  model access, failure behavior, cost, latency, and credit safety.
+- Fund the OpenAI API account, then verify BidLens and ScopeFence model access,
+  failure behavior, cost, latency, and credit safety. The production service key
+  is already stored as an encrypted Cloudflare secret.
 - Add `BETA_INVITE_URL` as a controlled Cloudflare value and complete the
   CourierIQ applicant-to-installed-build path.
 - Reconcile and apply the pending Supabase migration only through the database
