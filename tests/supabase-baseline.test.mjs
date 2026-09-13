@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const expectedProductionMigrations = [
+  "20260711_add_google_play_email.sql",
   "20260909184026_evidencelane_stripe_orders.sql",
   "20260909185604_enable_courieriq_rls.sql",
   "20260909193138_add_evidencelane_pack_tiers.sql",
@@ -17,6 +18,8 @@ const expectedProductionMigrations = [
   "20260912061857_bidlens_mvp.sql",
   "20260912061911_scopefence_mvp.sql",
   "20260912062004_bidlens_scopefence_foreign_key_indexes.sql",
+  "20260913013045_release_database_hardening.sql",
+  "20260913013100_scopefence_customer_data_deletion.sql",
 ];
 
 const expectedLegacyTables = [
@@ -85,7 +88,7 @@ test("captures the complete legacy CourierIQ and beta schema inventory", async (
 test("keeps release hardening forward-only and idempotent", async () => {
   const hardening = await readFile(
     new URL(
-      "../supabase/migrations/20260912224846_release_database_hardening.sql",
+      "../supabase/migrations/20260913013045_release_database_hardening.sql",
       import.meta.url,
     ),
     "utf8",

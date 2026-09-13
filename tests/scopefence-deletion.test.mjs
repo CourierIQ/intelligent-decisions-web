@@ -179,7 +179,7 @@ test("cross-origin deletion is rejected before authentication or storage access"
 
 test("the deletion migration preserves payment audit without reviving deleted workspaces", async () => {
   const [migration, api, ui] = await Promise.all([
-    readFile(new URL("../supabase/migrations/20260913011022_scopefence_customer_data_deletion.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260913013100_scopefence_customer_data_deletion.sql", import.meta.url), "utf8"),
     readFile(new URL("../src/scopefence-api.js", import.meta.url), "utf8"),
     readFile(new URL("../src/scopefence/workspace.tsx", import.meta.url), "utf8"),
   ]);

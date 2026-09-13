@@ -2,7 +2,8 @@ name = "intelligent-decisions-web"
 main = "src/index.js"
 compatibility_date = "2026-07-09"
 routes = [
-  { pattern = "intelligentdecisions.io", custom_domain = true }
+  { pattern = "intelligentdecisions.io", custom_domain = true },
+  { pattern = "www.intelligentdecisions.io", custom_domain = true }
 ]
 
 [assets]
@@ -15,3 +16,8 @@ SUPABASE_URL = "https://jlbtbpngvqyaiatslphi.supabase.co"
 SUPABASE_PUBLISHABLE_KEY = "sb_publishable_dXtSleDC4yB8OOrOMLmPJg_7n9-i8Lu"
 EVIDENCELANE_ORIGIN = "https://intelligentdecisions.io"
 CHARGEBACK_STUDIO_URL = "https://intelligentdecisions.io/projects/chargeback-studio"
+STRIPE_PUBLISHABLE_KEY = "pk_live_51UDonx1njYGhP2jB9HFTWwhIfQA7e6zSfnRRhQqX9WNUribNIm5tEOEbluQkJtF32ukIIEnZ1dv8aHDgEKnQvFL200I7bdzrx1"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
