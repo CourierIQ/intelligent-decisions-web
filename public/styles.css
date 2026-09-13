@@ -827,6 +827,19 @@ footer {
   line-height: 1.5;
 }
 
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+.footer-links a {
+  color: inherit;
+  font-size: .78rem;
+  text-underline-offset: 4px;
+}
+
 
 /* Desktop CourierIQ preview alignment:
    keep the existing desktop composition and move only the phone preview down
@@ -1062,7 +1075,7 @@ footer {
   .footer-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 12px;
   }
 }
 

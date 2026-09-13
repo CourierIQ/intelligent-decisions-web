@@ -241,6 +241,10 @@ tbody tr:hover { background: #f8faf9; }
 
 body.packet-open .workspace-shell, body.packet-open .workspace-dialog, body.packet-open .payment-dialog { display: none !important; }
 
+.product-legal-footer { min-height: 84px; padding: 22px clamp(18px, 4vw, 44px); display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid var(--studio-line); background: #fff; color: var(--studio-muted); font-size: .7rem; }
+.product-legal-footer nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 16px; }
+.product-legal-footer a { color: var(--studio-ink); font-weight: 750; text-underline-offset: 3px; }
+
 @media (max-width: 1120px) {
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .dashboard-grid { grid-template-columns: 1fr; }
@@ -291,6 +295,8 @@ body.packet-open .workspace-shell, body.packet-open .workspace-dialog, body.pack
   .payment-totals, .payment-message { margin-inline: 18px; }
   .payment-actions { padding-inline: 18px; }
   .payment-security { padding-inline: 18px; }
+  .product-legal-footer { align-items: flex-start; flex-direction: column; }
+  .product-legal-footer nav { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -8,6 +8,10 @@ const pages = [
   ["Revenue Leak Finder", "/projects/revenue-leak-finder/", /Revenue Leak Finder/i],
   ["BidLens", "/projects/bidlens/", /BidLens/i],
   ["ScopeFence", "/projects/scopefence/", /ScopeFence/i],
+  ["privacy notice", "/privacy/", /Privacy \| Intelligent Decisions Interactive/i],
+  ["terms", "/terms/", /Terms \| Intelligent Decisions Interactive/i],
+  ["support", "/support/", /Support \| Intelligent Decisions Interactive/i],
+  ["contact", "/contact/", /Contact \| Intelligent Decisions Interactive/i],
 ];
 
 function sameOrigin(url, baseURL) {

@@ -59,8 +59,9 @@ The order can change for business reasons, but no product bypasses the shared pr
 
 ### P0 — Security, privacy, and customer controls
 
-- [ ] Publish company privacy, terms, support, and contact pages and link them from every product.
-- [ ] Document product-specific data collection, retention, deletion, and subprocessors.
+- [x] Build company privacy, terms, support, and contact pages and link the release candidate from every active product.
+- [ ] Complete owner/legal review of the company privacy and terms copy, then publish it to production.
+- [x] Document product-specific data collection, retention, deletion, and subprocessors in the shared privacy notice without obscuring unresolved product controls.
 - [ ] Provide account deletion and history/data deletion wherever customer data is retained.
 - [ ] Enable Supabase leaked-password protection before opening password-based Chargeback Studio signup.
 - [x] Review the authenticated Chargeback provisioning SECURITY DEFINER function. Its public RPC binds all work to auth.uid(), rejects unauthenticated calls, and grants execution only to authenticated users; the current advisor finding is intentional.
@@ -222,7 +223,7 @@ Never put secret values in this document.
 - [x] Wrangler completed a production Worker and 49-asset dry run without deploying.
 - [x] npm reported zero known dependency vulnerabilities on 2026-09-12.
 - [x] Chargeback Studio passed a local browser smoke check with its bundled Supabase client: the account screen initialized, required assets loaded, no horizontal overflow appeared, and the console remained clean.
-- [x] Sixteen repeatable Chromium smoke checks cover the homepage, ADBridge, CourierIQ, all four MVPs, and the legacy EvidenceLane redirect across desktop and mobile layouts.
+- [x] Twenty-four repeatable Chromium smoke checks cover the homepage, ADBridge, CourierIQ, all four MVPs, the four company information pages, and the legacy EvidenceLane redirect across desktop and mobile layouts.
 - [x] Supabase production advisors and schema metadata were reviewed on 2026-09-12: all 36 public product tables have RLS enabled; remaining security warnings are the intentional self-provisioning RPC and disabled leaked-password protection.
 - [x] All fourteen tracked production migration versions were reconciled to byte-preserving local filenames, and a current CLI-generated hardening migration now records the existing Chargeback Studio Worker grants plus the two pending CourierIQ foreign-key indexes.
 - [x] The reconstructed CourierIQ and beta-intake baseline matches production's 14 tables, 209 columns, 40 named constraints, and 32 existing indexes; it executed successfully with the RLS and hardening migrations in an isolated PostgreSQL-compatible runtime.

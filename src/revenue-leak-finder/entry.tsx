@@ -24,7 +24,12 @@ function App() {
       <footer className={styles.footer}>
         <BrandMark />
         <p>Revenue Leak Finder by Intelligent Decisions</p>
-        <a href="mailto:development@intelligentdecisions.io">Support</a>
+        <nav className={styles.legalLinks} aria-label="Legal and support navigation">
+          <a href="/privacy/#revenue-leak-finder">Privacy</a>
+          <a href="/terms/">Terms</a>
+          <a href="/support/">Support</a>
+          <a href="/contact/">Contact</a>
+        </nav>
       </footer>
     </main>
   );

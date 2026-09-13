@@ -5,10 +5,15 @@ import test from "node:test";
 import worker from "../src/index.js";
 
 const publicRoot = new URL("../public/", import.meta.url);
+const sourceRoot = new URL("../src/", import.meta.url);
 const publicGithubUrl = "https://github.com/Intelligent-Decisions-Interactive/ADBridge";
 
 async function readPublic(relativePath) {
   return readFile(new URL(relativePath, publicRoot), "utf8");
+}
+
+async function readSource(relativePath) {
+  return readFile(new URL(relativePath, sourceRoot), "utf8");
 }
 
 function localAssetPaths(html) {
@@ -88,6 +93,70 @@ test("ADBridge is discoverable and every local page asset exists", async () => {
       access(fileURLToPath(fileUrl)),
       "Expected local site asset to exist: " + localPath,
     );
+  }
+});
+
+test("company legal and support pages are complete, discoverable, and locally linked", async () => {
+  const pages = await Promise.all([
+    readPublic("privacy/index.html"),
+    readPublic("terms/index.html"),
+    readPublic("support/index.html"),
+    readPublic("contact/index.html"),
+  ]);
+  const sitemap = await readPublic("sitemap.xml");
+
+  for (const path of ["privacy", "terms", "support", "contact"]) {
+    assert.match(sitemap, new RegExp(`https:\\/\\/intelligentdecisions\\.io\\/${path}\\/`));
+  }
+  for (const page of pages) {
+    for (const route of ["/privacy/", "/terms/", "/support/", "/contact/"]) {
+      assert.match(page, new RegExp(`href="${escapeRegExp(route)}`));
+    }
+    for (const localPath of localAssetPaths(page)) {
+      await assert.doesNotReject(
+        access(fileURLToPath(new URL("." + localPath, publicRoot))),
+        "Expected legal-page asset to exist: " + localPath,
+      );
+    }
+  }
+
+  const privacy = pages[0];
+  assert.match(privacy, /ADBridge/);
+  assert.match(privacy, /CourierIQ/);
+  assert.match(privacy, /Chargeback Studio/);
+  assert.match(privacy, /Revenue Leak Finder/);
+  assert.match(privacy, /BidLens/);
+  assert.match(privacy, /ScopeFence/);
+  assert.match(privacy, /store: false/);
+  assert.match(privacy, /abuse-monitoring logs may still retain customer content for up to 30 days/i);
+  assert.match(privacy, /Self-service deletion is not yet available/i);
+  assert.doesNotMatch(privacy, /zero retention/i);
+
+  const terms = pages[1];
+  assert.match(terms, /not provide legal, tax, accounting, financial, compliance, or procurement advice/i);
+  assert.match(terms, /You retain ownership/i);
+  assert.match(terms, /rights and authority to submit/i);
+
+  const support = pages[2];
+  assert.match(support, /do not have a published response-time guarantee/i);
+  assert.match(support, /Privacy and deletion/i);
+});
+
+test("every active product surface links privacy, terms, support, and contact", async () => {
+  const surfaces = await Promise.all([
+    readPublic("index.html"),
+    readPublic("projects/adbridge/index.html"),
+    readPublic("projects/courieriq/index.html"),
+    readPublic("projects/chargeback-studio/index.html"),
+    readSource("revenue-leak-finder/entry.tsx"),
+    readSource("bidlens/entry.tsx"),
+    readSource("scopefence/entry.tsx"),
+  ]);
+
+  for (const surface of surfaces) {
+    for (const route of ["/privacy/", "/terms/", "/support/", "/contact/"]) {
+      assert.match(surface, new RegExp(`href=(?:"|\\{?")${escapeRegExp(route)}`));
+    }
   }
 });
 

@@ -17,7 +17,7 @@ function App() {
       <BidLensWorkbench sample={BIDLENS_SAMPLE_ANALYSIS} products={BIDLENS_PRODUCTS} />
       <footer className={styles.footer}>
         <p>Decision support, not legal advice. Verify material requirements against the source RFP.</p>
-        <div><a href="/">Intelligent Decisions</a><a href="/projects/bidlens/privacy/">Privacy</a><a href="mailto:development@intelligentdecisions.io">Contact</a></div>
+        <div><a href="/">Intelligent Decisions</a><a href="/privacy/#bidlens">Privacy</a><a href="/terms/">Terms</a><a href="/support/">Support</a><a href="/contact/">Contact</a></div>
       </footer>
     </main>
   );

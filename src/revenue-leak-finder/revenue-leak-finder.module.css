@@ -382,6 +382,7 @@
 .footer p { color: var(--rlf-muted); font-size: .74rem; }
 .footer a { color: var(--rlf-muted); font-size: .74rem; }
 .footer .studio-monogram { color: #fff; }
+.legalLinks { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 14px; }
 
 .modalBackdrop { position: fixed; z-index: 500; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(20,31,26,.64); backdrop-filter: blur(8px); }
 .authModal { position: relative; width: min(470px, 100%); padding: 34px; border-radius: 18px; background: #fff; box-shadow: 0 28px 90px rgba(10,26,18,.25); }
@@ -461,6 +462,7 @@
   .historyCard ul { grid-template-columns: 1fr; }
   .footer { grid-template-columns: auto 1fr; gap: 14px; padding: 22px 0; }
   .footer p { grid-column: 1 / -1; grid-row: 2; margin: 0; }
+  .legalLinks { grid-column: 1 / -1; justify-content: flex-start; }
   .authModal { padding: 30px 22px 24px; }
 }
 

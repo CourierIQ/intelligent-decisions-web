@@ -13,7 +13,7 @@ function App() {
         <nav aria-label="ScopeFence navigation"><a href="/#products">All products</a></nav>
       </header>
       <ScopeFenceWorkspace />
-      <footer className={styles.footer}><p>ScopeFence is a planning aid, not legal advice.</p><a href="/">All Intelligent Decisions products</a></footer>
+      <footer className={styles.footer}><p>ScopeFence is a planning aid, not legal advice.</p><nav aria-label="Legal and support navigation"><a href="/">All products</a><a href="/privacy/#scopefence">Privacy</a><a href="/terms/">Terms</a><a href="/support/">Support</a><a href="/contact/">Contact</a></nav></footer>
     </main>
   );
 }

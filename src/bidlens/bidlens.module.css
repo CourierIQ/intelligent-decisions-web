@@ -507,7 +507,7 @@
 
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 90px; padding: 24px 34px; border-top: 1px solid var(--bl-line); color: var(--bl-muted); }
 .footer p { margin: 0; font-size: .7rem; }
-.footer div { display: flex; gap: 20px; }
+.footer div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 20px; }
 .footer a { color: var(--bl-paper); font-size: .7rem; text-underline-offset: 3px; }
 
 .privacyContent { width: min(880px, calc(100% - 40px)); margin: 0 auto; padding: 90px 0 110px; }
@@ -623,6 +623,7 @@
   .exportButton { align-self: flex-end; }
   .outline { grid-template-columns: 1fr; }
   .footer { align-items: flex-start; flex-direction: column; padding-inline: 20px; }
+  .footer div { justify-content: flex-start; }
 }
 
 @media (max-width: 560px) {

@@ -237,6 +237,7 @@
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 26px clamp(20px, 4vw, 58px); border-top: 1px solid var(--sf-line); color: #718096; font-size: .78rem; }
 .footer p { margin: 0; }
 .footer a { color: var(--sf-muted); font-weight: 750; }
+.footer nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 18px; }
 
 @media (max-width: 1000px) {
   .product { width: min(100% - 36px, 780px); padding-top: 48px; }
@@ -285,6 +286,7 @@
   .checkoutActions { flex-direction: column-reverse; }
   .checkoutActions button { width: 100%; }
   .footer { align-items: flex-start; flex-direction: column; }
+  .footer nav { justify-content: flex-start; }
 }
 
 @media (prefers-reduced-motion: reduce) {
