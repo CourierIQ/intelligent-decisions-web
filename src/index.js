@@ -2352,9 +2352,17 @@ async function routeRequest(request, env) {
 }
 
 function contentSecurityPolicy(requestUrl) {
-  const scriptSources = ["'self'", "https://challenges.cloudflare.com"];
+  const scriptSources = [
+    "'self'",
+    "https://challenges.cloudflare.com",
+    "https://static.cloudflareinsights.com",
+  ];
   const imageSources = ["'self'", "data:"];
-  const connectSources = ["'self'", "https://challenges.cloudflare.com"];
+  const connectSources = [
+    "'self'",
+    "https://challenges.cloudflare.com",
+    "https://cloudflareinsights.com",
+  ];
   const frameSources = ["https://challenges.cloudflare.com"];
 
   if (requestUrl.pathname.startsWith("/projects/chargeback-studio/")) {

@@ -266,9 +266,11 @@ test("Chargeback Studio bundles Supabase and receives a least-privilege payment 
   const policy = response.headers.get("content-security-policy") || "";
 
   assert.match(policy, /script-src[^;]*https:\/\/js\.stripe\.com/);
+  assert.match(policy, /script-src[^;]*https:\/\/static\.cloudflareinsights\.com/);
   assert.match(policy, /connect-src[^;]*https:\/\/jlbtbpngvqyaiatslphi\.supabase\.co/);
   assert.match(policy, /connect-src[^;]*wss:\/\/jlbtbpngvqyaiatslphi\.supabase\.co/);
   assert.match(policy, /connect-src[^;]*https:\/\/api\.stripe\.com/);
+  assert.match(policy, /connect-src[^;]*https:\/\/cloudflareinsights\.com/);
   assert.match(policy, /frame-src[^;]*https:\/\/hooks\.stripe\.com/);
   assert.match(policy, /img-src[^;]*blob:/);
   assert.doesNotMatch(policy, /unsafe-eval/);
