@@ -42,8 +42,8 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [x] Reconcile Supabase migration version names. All fourteen production migrations now have SQL-equivalent local files with the exact production versions.
 - [ ] Reconcile the pre-history beta schema migration and the forward release-hardening migration with remote migration history during the controlled database release.
 - [x] Check in the initial CourierIQ and beta-intake schemas so a fresh environment can be recreated from the repository.
-- [ ] Add a staging deployment and require successful checks before production deployment.
-- [ ] Document deployment, environment configuration, rollback, and database-recovery procedures.
+- [ ] Add a disposable or existing no-additional-cost pre-production deployment and require successful checks before production deployment. Do not create a paid persistent Supabase branch solely for testing.
+- [x] Document deployment, environment configuration, rollback, and database-recovery procedures in `PRODUCTION_RUNBOOK.md`.
 
 ### P0 — Domain, routing, and browser security
 
@@ -70,7 +70,7 @@ The order can change for business reasons, but no product bypasses the shared pr
 
 ### P0 — Production integrations
 
-- [ ] Create an environment-variable inventory with owner, environment, rotation procedure, and verification status.
+- [x] Create an environment-variable inventory with owner, environment, rotation procedure, and verification status.
 - [ ] Verify Turnstile, Supabase Auth, Resend, Stripe, and OpenAI in staging and production.
 - [x] Document and test the mixed PaymentIntent/Checkout routing contract and all required Stripe webhook event subscriptions.
 - [ ] Test Stripe webhook signature validation, idempotency, delayed events, failed payments, refunds, and replay/recovery.
@@ -85,9 +85,9 @@ The order can change for business reasons, but no product bypasses the shared pr
 - [ ] Configure Cloudflare error monitoring and alerts.
 - [ ] Monitor Supabase database health, authentication failures, storage failures, and backup/recovery readiness.
 - [ ] Monitor Stripe webhook failures and provide an operator replay procedure.
-- [ ] Add a release checklist with smoke tests and an explicit rollback decision point.
+- [x] Add a release checklist with smoke tests and an explicit rollback decision point.
 - [x] Add covering indexes for courieriq_offer_score_components.offer_id and user_id to the generated forward release-hardening migration.
-- [ ] Apply the release-hardening migration in staging, then production, and confirm the performance advisor clears both findings.
+- [ ] Validate the release-hardening migration in a clean disposable local database, then apply it through the controlled production database release and confirm the performance advisor clears both findings.
 - [ ] Change homepage product badges so only verified products are labeled Live.
 
 ## Product launch gates
@@ -136,7 +136,7 @@ Release gate: one clean end-to-end free flow, one clean paid flow, published cus
 - [x] Check in the full database baseline needed to recreate CourierIQ and beta intake.
 - [ ] Document Android build, signing, Play distribution, versioning, rollback, and support ownership outside this web repository.
 - [x] Stage the two recommended foreign-key indexes for courieriq_offer_score_components in the forward release-hardening migration.
-- [ ] Apply the indexes in staging, validate query plans and write latency, then promote them to production.
+- [ ] Validate the indexes in a clean disposable local database, then apply them through the controlled production database release and confirm query plans and write latency.
 
 Release gate: a new beta applicant can reach a working installed build without manual database intervention, and the team can support or roll back that build.
 
@@ -144,7 +144,7 @@ Release gate: a new beta applicant can reach a working installed build without m
 
 - [x] Workspace, storage, entitlement, payment-intent, and webhook code are present.
 - [x] The evidence storage bucket is private and restricts file size and MIME types.
-- [ ] Fix CSP so Supabase and Stripe load. The deployed login currently displays “The account service could not be loaded.”
+- [x] Fix CSP so the bundled Supabase client and Stripe load from the product's explicitly allowed origins; the local browser gate now verifies the account screen initializes without CSP errors.
 - [ ] Configure STRIPE_PUBLISHABLE_KEY.
 - [ ] Verify account creation, email verification if required, sign-in, sign-out, session recovery, and password reset.
 - [ ] Verify dispute creation, file upload, readiness check, preview, paid export, history, and dispute deletion.
@@ -194,16 +194,15 @@ Release gate: customer data is controllable and deletable, the golden set meets 
 
 ## Current production configuration snapshot
 
-Configuration detected as present:
+Configuration detected as present (binding names rechecked against the live Worker on 2026-09-12):
 
 - Supabase URL, publishable key, and server secret
 - Resend
 - Turnstile
 - Stripe secret key
-- BidLens webhook configuration
-- ScopeFence webhook configuration
+- Shared Stripe webhook configuration used by BidLens and ScopeFence fallback routing
 
-Configuration detected as missing:
+Required production configuration detected as missing:
 
 - STRIPE_PUBLISHABLE_KEY
 - OPENAI_API_KEY
@@ -213,7 +212,7 @@ Never put secret values in this document.
 
 ## Verification record
 
-- [x] Twenty repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, and cross-product Stripe routing regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
+- [x] Twenty-one repository tests, including ADBridge marketing, legacy routing, asset, Chargeback Studio CSP, loopback/production routing, cross-product Stripe routing, and release-binding inventory regressions, passed after a clean lockfile-based npm ci install on 2026-09-12.
 - [x] Main product pages and compiled product bundles returned HTTP 200.
 - [x] The CourierIQ admin API redirected unauthenticated access to Cloudflare Access.
 - [x] Product account APIs rejected unauthenticated requests.

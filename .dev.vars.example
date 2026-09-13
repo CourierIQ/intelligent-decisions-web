@@ -1,0 +1,24 @@
+# Copy this file to .dev.vars for local Worker development, then fill values
+# from the appropriate provider dashboards. Never commit the populated file.
+
+# Public or non-secret configuration
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+STRIPE_PUBLISHABLE_KEY=
+CHARGEBACK_STUDIO_URL=
+EVIDENCELANE_ORIGIN=
+STRIPE_CHARGEBACK_TAX_CODE=
+BIDLENS_OPENAI_MODEL=
+SCOPEFENCE_OPENAI_MODEL=
+OPENAI_MODEL=
+
+# Secrets and controlled operational values
+SUPABASE_SECRET_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+BIDLENS_STRIPE_WEBHOOK_SECRET=
+SCOPEFENCE_STRIPE_WEBHOOK_SECRET=
+RESEND_API_KEY=
+TURNSTILE_SECRET_KEY=
+OPENAI_API_KEY=
+BETA_INVITE_URL=
